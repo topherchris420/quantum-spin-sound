@@ -99,29 +99,119 @@ const Index = () => {
     }
 
     try {
-      // Simple audio synthesis based on code evaluation
-      // This is a simplified version - Strudel integration would need more setup
+      const now = audioContext.currentTime;
+      const oscillators: OscillatorNode[] = [];
+      const gains: GainNode[] = [];
       
-      // Create oscillators for demonstration
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
+      // Main mixer
+      const mainGain = audioContext.createGain();
+      mainGain.gain.setValueAtTime(0.15, now);
       
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+      // Bass line - sawtooth
+      const bass = audioContext.createOscillator();
+      const bassGain = audioContext.createGain();
+      bass.type = 'sawtooth';
+      bass.frequency.setValueAtTime(65.41, now); // C2
+      bassGain.gain.setValueAtTime(0.3, now);
+      bass.connect(bassGain);
+      bassGain.connect(mainGain);
       
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      // Modulate bass frequency
+      const lfo1 = audioContext.createOscillator();
+      const lfo1Gain = audioContext.createGain();
+      lfo1.frequency.setValueAtTime(0.25, now);
+      lfo1Gain.gain.setValueAtTime(10, now);
+      lfo1.connect(lfo1Gain);
+      lfo1Gain.connect(bass.frequency);
       
-      oscillator.connect(gainNode);
+      // Melody - triangle wave
+      const melody = audioContext.createOscillator();
+      const melodyGain = audioContext.createGain();
+      melody.type = 'triangle';
+      melodyGain.gain.setValueAtTime(0.2, now);
+      melody.connect(melodyGain);
+      melodyGain.connect(mainGain);
+      
+      // Arpeggio pattern
+      const notes = [261.63, 293.66, 329.63, 392.00, 523.25]; // C4, D4, E4, G4, C5
+      let noteIndex = 0;
+      const arpInterval = setInterval(() => {
+        if (melody.frequency) {
+          melody.frequency.setValueAtTime(notes[noteIndex], audioContext.currentTime);
+          noteIndex = (noteIndex + 1) % notes.length;
+        }
+      }, 250);
+      
+      // Pad - sine waves
+      const pad1 = audioContext.createOscillator();
+      const pad2 = audioContext.createOscillator();
+      const padGain = audioContext.createGain();
+      pad1.type = 'sine';
+      pad2.type = 'sine';
+      pad1.frequency.setValueAtTime(523.25, now); // C5
+      pad2.frequency.setValueAtTime(659.25, now); // E5
+      padGain.gain.setValueAtTime(0.1, now);
+      
+      // Add reverb-like delay
+      const delay = audioContext.createDelay();
+      delay.delayTime.setValueAtTime(0.3, now);
+      const delayFeedback = audioContext.createGain();
+      delayFeedback.gain.setValueAtTime(0.4, now);
+      
+      pad1.connect(padGain);
+      pad2.connect(padGain);
+      padGain.connect(delay);
+      delay.connect(delayFeedback);
+      delayFeedback.connect(delay);
+      delay.connect(mainGain);
+      padGain.connect(mainGain);
+      
+      // High frequency shimmer - FM synthesis
+      const carrier = audioContext.createOscillator();
+      const modulator = audioContext.createOscillator();
+      const modGain = audioContext.createGain();
+      const carrierGain = audioContext.createGain();
+      
+      carrier.type = 'sine';
+      modulator.type = 'sine';
+      carrier.frequency.setValueAtTime(1046.5, now); // C6
+      modulator.frequency.setValueAtTime(5, now);
+      modGain.gain.setValueAtTime(200, now);
+      carrierGain.gain.setValueAtTime(0.08, now);
+      
+      modulator.connect(modGain);
+      modGain.connect(carrier.frequency);
+      carrier.connect(carrierGain);
+      carrierGain.connect(mainGain);
+      
+      // Connect to analyser
       if (analyser) {
-        gainNode.connect(analyser);
+        mainGain.connect(analyser);
       } else {
-        gainNode.connect(audioContext.destination);
+        mainGain.connect(audioContext.destination);
       }
       
-      oscillator.start();
+      // Start all oscillators
+      const startTime = now + 0.1;
+      bass.start(startTime);
+      lfo1.start(startTime);
+      melody.start(startTime);
+      pad1.start(startTime);
+      pad2.start(startTime);
+      carrier.start(startTime);
+      modulator.start(startTime);
       
-      strudelRef.current = { oscillator, gainNode };
-      toast.success("Audio started! (Simplified demo - full Strudel integration requires additional setup)");
+      oscillators.push(bass, lfo1, melody, pad1, pad2, carrier, modulator);
+      gains.push(bassGain, melodyGain, padGain, carrierGain, mainGain);
+      
+      strudelRef.current = { 
+        oscillators, 
+        gains, 
+        arpInterval,
+        mainGain 
+      };
+      
+      toast.success("Quantum resonance field activated!");
     } catch (error) {
       console.error("Audio error:", error);
       toast.error("Audio playback failed: " + (error as Error).message);
@@ -137,7 +227,20 @@ const Index = () => {
       setIsPlaying(true);
     } else {
       if (strudelRef.current) {
-        strudelRef.current.oscillator?.stop();
+        // Stop all oscillators
+        strudelRef.current.oscillators?.forEach((osc: OscillatorNode) => {
+          try {
+            osc.stop();
+          } catch (e) {
+            // Oscillator might already be stopped
+          }
+        });
+        
+        // Clear arpeggio interval
+        if (strudelRef.current.arpInterval) {
+          clearInterval(strudelRef.current.arpInterval);
+        }
+        
         strudelRef.current = null;
       }
       setIsPlaying(false);
@@ -145,23 +248,18 @@ const Index = () => {
   };
 
   const handleScratch = useCallback((scratchSpeed: number) => {
-    if (!audioContext || !scratchFilterRef.current || !strudelRef.current) return;
+    if (!audioContext || !strudelRef.current?.mainGain) return;
     
-    const filter = scratchFilterRef.current;
     const now = audioContext.currentTime;
+    const scratchIntensity = Math.abs(scratchSpeed) * 0.05;
     
-    // Apply pitch shift and filtering for scratch effect
-    const pitchShift = 1 + (scratchSpeed * 0.1);
-    const filterFreq = Math.max(200, Math.min(5000, 2000 - Math.abs(scratchSpeed) * 100));
+    // Modulate volume for scratch effect
+    const currentGain = strudelRef.current.mainGain.gain.value;
+    const targetGain = Math.max(0.05, Math.min(0.3, currentGain + scratchIntensity));
     
-    if (strudelRef.current.oscillator) {
-      const baseFreq = 440;
-      strudelRef.current.oscillator.frequency.setValueAtTime(
-        baseFreq * pitchShift,
-        now
-      );
-      filter.frequency.setValueAtTime(filterFreq, now);
-    }
+    strudelRef.current.mainGain.gain.cancelScheduledValues(now);
+    strudelRef.current.mainGain.gain.setValueAtTime(targetGain, now);
+    strudelRef.current.mainGain.gain.linearRampToValueAtTime(0.15, now + 0.1);
   }, [audioContext]);
 
   const handleNeedleChange = useCallback((isOnRecord: boolean) => {
@@ -169,7 +267,16 @@ const Index = () => {
       handlePlayPause();
     } else if (!isOnRecord && isPlaying) {
       if (strudelRef.current) {
-        strudelRef.current.oscillator?.stop();
+        strudelRef.current.oscillators?.forEach((osc: OscillatorNode) => {
+          try {
+            osc.stop();
+          } catch (e) {
+            // Already stopped
+          }
+        });
+        if (strudelRef.current.arpInterval) {
+          clearInterval(strudelRef.current.arpInterval);
+        }
         strudelRef.current = null;
       }
       setIsPlaying(false);
@@ -187,7 +294,16 @@ const Index = () => {
     if (easterEggCount + 1 === 3) {
       // Stop current audio
       if (strudelRef.current) {
-        strudelRef.current.oscillator?.stop();
+        strudelRef.current.oscillators?.forEach((osc: OscillatorNode) => {
+          try {
+            osc.stop();
+          } catch (e) {
+            // Already stopped
+          }
+        });
+        if (strudelRef.current.arpInterval) {
+          clearInterval(strudelRef.current.arpInterval);
+        }
         strudelRef.current = null;
       }
       setIsPlaying(false);
