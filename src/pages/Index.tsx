@@ -2,9 +2,12 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { VinylPlayer } from "@/components/VinylPlayer";
 import { CodeEditor } from "@/components/CodeEditor";
 import { AudioVisualizer } from "@/components/AudioVisualizer";
+import { EnhancedVisualizer } from "@/components/EnhancedVisualizer";
+import { QuantumField } from "@/components/QuantumField";
 import { Controls } from "@/components/Controls";
 import { toast } from "sonner";
 import { evaluate } from "@strudel/transpiler";
+import { Music } from "lucide-react";
 
 const DEFAULT_CODE = `stack(
   // Section 1: Vers3Dynamics — Living Resonant Field (ascending arpeggio for energy transfer)
@@ -41,7 +44,10 @@ const Index = () => {
   const [audioInitialized, setAudioInitialized] = useState(false);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
+  const [easterEggCount, setEasterEggCount] = useState(0);
   const strudelRef = useRef<any>(null);
+  const scratchFilterRef = useRef<BiquadFilterNode | null>(null);
+  const easterEggAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     // Initialize audio context
@@ -59,9 +65,15 @@ const Index = () => {
         
         // Create analyser
         const analyserNode = ctx.createAnalyser();
-        analyserNode.fftSize = 256;
+        analyserNode.fftSize = 2048;
         analyserNode.connect(ctx.destination);
         setAnalyser(analyserNode);
+        
+        // Create scratch filter
+        const filter = ctx.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.value = 2000;
+        scratchFilterRef.current = filter;
         
         setAudioInitialized(true);
         toast.success("Quantum resonance field initialized!");
@@ -132,6 +144,26 @@ const Index = () => {
     }
   };
 
+  const handleScratch = useCallback((scratchSpeed: number) => {
+    if (!audioContext || !scratchFilterRef.current || !strudelRef.current) return;
+    
+    const filter = scratchFilterRef.current;
+    const now = audioContext.currentTime;
+    
+    // Apply pitch shift and filtering for scratch effect
+    const pitchShift = 1 + (scratchSpeed * 0.1);
+    const filterFreq = Math.max(200, Math.min(5000, 2000 - Math.abs(scratchSpeed) * 100));
+    
+    if (strudelRef.current.oscillator) {
+      const baseFreq = 440;
+      strudelRef.current.oscillator.frequency.setValueAtTime(
+        baseFreq * pitchShift,
+        now
+      );
+      filter.frequency.setValueAtTime(filterFreq, now);
+    }
+  }, [audioContext]);
+
   const handleNeedleChange = useCallback((isOnRecord: boolean) => {
     if (isOnRecord && !isPlaying) {
       handlePlayPause();
@@ -149,14 +181,50 @@ const Index = () => {
     toast.success("Code reset to default");
   };
 
+  const handleEasterEgg = () => {
+    setEasterEggCount(prev => prev + 1);
+    
+    if (easterEggCount + 1 === 3) {
+      // Stop current audio
+      if (strudelRef.current) {
+        strudelRef.current.oscillator?.stop();
+        strudelRef.current = null;
+      }
+      setIsPlaying(false);
+      
+      // Play easter egg audio
+      if (!easterEggAudioRef.current) {
+        easterEggAudioRef.current = new Audio('/easter-egg.mp3');
+        easterEggAudioRef.current.volume = 0.7;
+      }
+      
+      easterEggAudioRef.current.play();
+      toast.success("🎵 Easter egg unlocked! Wrong Number Song - Slowed & Reverb", {
+        duration: 5000,
+      });
+      setEasterEggCount(0);
+    } else {
+      toast(`Click ${3 - (easterEggCount + 1)} more times...`, { duration: 1000 });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-pulse-glow">
-            Quantum Resonance Field
-          </h1>
+          <div className="flex items-center justify-center gap-3">
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-pulse-glow">
+              Quantum Resonance Field
+            </h1>
+            <button
+              onClick={handleEasterEgg}
+              className="p-2 hover:scale-110 transition-transform"
+              aria-label="Easter egg"
+            >
+              <Music className="w-6 h-6 text-primary/50 hover:text-primary" />
+            </button>
+          </div>
           <p className="text-muted-foreground text-lg">
             Live code music with Strudel & vinyl interaction
           </p>
@@ -166,10 +234,15 @@ const Index = () => {
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Left side - Vinyl player and controls */}
           <div className="space-y-6">
-            <VinylPlayer 
-              isPlaying={isPlaying} 
-              onNeedleChange={handleNeedleChange}
-            />
+            <div className="relative">
+              <QuantumField isPlaying={isPlaying} analyser={analyser} />
+              <VinylPlayer 
+                isPlaying={isPlaying} 
+                onNeedleChange={handleNeedleChange}
+                onScratch={handleScratch}
+                audioContext={audioContext}
+              />
+            </div>
             
             <Controls
               isPlaying={isPlaying}
@@ -198,6 +271,12 @@ const Index = () => {
             <div className="h-[600px]">
               <CodeEditor value={code} onChange={setCode} />
             </div>
+
+            <EnhancedVisualizer
+              isPlaying={isPlaying}
+              audioContext={audioContext}
+              analyser={analyser}
+            />
           </div>
         </div>
 

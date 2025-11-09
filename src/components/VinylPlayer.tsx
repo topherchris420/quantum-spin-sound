@@ -4,12 +4,17 @@ import { cn } from "@/lib/utils";
 interface VinylPlayerProps {
   isPlaying: boolean;
   onNeedleChange: (isOnRecord: boolean) => void;
+  onScratch?: (scratchSpeed: number) => void;
+  audioContext?: AudioContext | null;
 }
 
-export const VinylPlayer = ({ isPlaying, onNeedleChange }: VinylPlayerProps) => {
+export const VinylPlayer = ({ isPlaying, onNeedleChange, onScratch, audioContext }: VinylPlayerProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isDraggingRecord, setIsDraggingRecord] = useState(false);
   const [needleAngle, setNeedleAngle] = useState(-30);
+  const [rotation, setRotation] = useState(0);
+  const lastMousePosRef = useRef({ x: 0, y: 0 });
   const needleOnRecord = needleAngle > -10;
 
   useEffect(() => {
@@ -82,38 +87,62 @@ export const VinylPlayer = ({ isPlaying, onNeedleChange }: VinylPlayerProps) => 
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
     
     // Check if click is near needle (top right area)
     if (x > rect.width * 0.7 && y < rect.height * 0.5) {
       setIsDragging(true);
+    } 
+    // Check if click is on the vinyl record
+    else if (distance < rect.width * 0.4) {
+      setIsDraggingRecord(true);
+      lastMousePosRef.current = { x: e.clientX, y: e.clientY };
     }
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDragging) return;
-    
-    const rect = e.currentTarget.getBoundingClientRect();
-    const y = e.clientY - rect.top;
-    const maxY = rect.height * 0.5;
-    
-    // Calculate angle based on vertical position
-    const angle = Math.max(-30, Math.min(5, ((y / maxY) * 35) - 30));
-    setNeedleAngle(angle);
-    
-    const isOnRecord = angle > -10;
-    onNeedleChange(isOnRecord);
+    if (isDragging) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      const maxY = rect.height * 0.5;
+      
+      // Calculate angle based on vertical position
+      const angle = Math.max(-30, Math.min(5, ((y / maxY) * 35) - 30));
+      setNeedleAngle(angle);
+      
+      const isOnRecord = angle > -10;
+      onNeedleChange(isOnRecord);
+    } else if (isDraggingRecord && isPlaying) {
+      // Calculate scratch speed based on mouse movement
+      const deltaX = e.clientX - lastMousePosRef.current.x;
+      const deltaY = e.clientY - lastMousePosRef.current.y;
+      const scratchSpeed = Math.sqrt(deltaX * deltaX + deltaY * deltaY) / 10;
+      
+      // Update rotation for visual feedback
+      setRotation(prev => prev + deltaX * 0.5);
+      
+      // Trigger scratch effect
+      if (onScratch && audioContext) {
+        onScratch(scratchSpeed * Math.sign(deltaX));
+      }
+      
+      lastMousePosRef.current = { x: e.clientX, y: e.clientY };
+    }
   };
 
   const handleMouseUp = () => {
     setIsDragging(false);
+    setIsDraggingRecord(false);
   };
 
   useEffect(() => {
-    if (isDragging) {
+    if (isDragging || isDraggingRecord) {
       document.addEventListener("mouseup", handleMouseUp);
       return () => document.removeEventListener("mouseup", handleMouseUp);
     }
-  }, [isDragging]);
+  }, [isDragging, isDraggingRecord]);
 
   return (
     <div 
@@ -127,8 +156,11 @@ export const VinylPlayer = ({ isPlaying, onNeedleChange }: VinylPlayerProps) => 
         height={500}
         className={cn(
           "w-full h-full transition-transform duration-1000",
-          isPlaying && "animate-spin-vinyl"
+          isDraggingRecord && "cursor-grabbing",
+          !isDraggingRecord && "cursor-grab",
+          isPlaying && !isDraggingRecord && "animate-spin-vinyl"
         )}
+        style={isDraggingRecord ? { transform: `rotate(${rotation}deg)` } : undefined}
       />
       
       {/* Tonearm and needle */}
@@ -158,6 +190,14 @@ export const VinylPlayer = ({ isPlaying, onNeedleChange }: VinylPlayerProps) => 
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center bg-background/80 backdrop-blur-sm px-6 py-3 rounded-lg border border-primary/30">
             <p className="text-sm text-muted-foreground">Drag the needle to the record</p>
+            <p className="text-xs text-muted-foreground mt-1">Drag the record while playing to scratch</p>
+          </div>
+        </div>
+      )}
+      {isPlaying && isDraggingRecord && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-none">
+          <div className="bg-primary/20 backdrop-blur-sm px-4 py-2 rounded-full border border-primary/50">
+            <p className="text-xs font-mono text-primary">SCRATCHING...</p>
           </div>
         </div>
       )}
