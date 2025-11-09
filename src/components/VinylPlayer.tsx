@@ -1,0 +1,166 @@
+import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
+
+interface VinylPlayerProps {
+  isPlaying: boolean;
+  onNeedleChange: (isOnRecord: boolean) => void;
+}
+
+export const VinylPlayer = ({ isPlaying, onNeedleChange }: VinylPlayerProps) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [needleAngle, setNeedleAngle] = useState(-30);
+  const needleOnRecord = needleAngle > -10;
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = Math.min(centerX, centerY) - 20;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw vinyl record
+    const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+    gradient.addColorStop(0, "#1a1a1a");
+    gradient.addColorStop(0.3, "#0a0a0a");
+    gradient.addColorStop(0.6, "#1a1a1a");
+    gradient.addColorStop(1, "#0a0a0a");
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Draw grooves
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 50; i++) {
+      const grooveRadius = radius * 0.3 + (i * radius * 0.7) / 50;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, grooveRadius, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Draw label
+    const labelGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius * 0.3);
+    labelGradient.addColorStop(0, "hsl(180, 100%, 50%)");
+    labelGradient.addColorStop(0.5, "hsl(180, 80%, 30%)");
+    labelGradient.addColorStop(1, "hsl(220, 20%, 15%)");
+
+    ctx.fillStyle = labelGradient;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius * 0.3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Add glow effect if playing
+    if (isPlaying) {
+      ctx.strokeStyle = "rgba(0, 255, 255, 0.4)";
+      ctx.lineWidth = 3;
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = "rgba(0, 255, 255, 0.6)";
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
+    // Draw center hole
+    ctx.fillStyle = "#000";
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius * 0.1, 0, Math.PI * 2);
+    ctx.fill();
+  }, [isPlaying, needleAngle]);
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Check if click is near needle (top right area)
+    if (x > rect.width * 0.7 && y < rect.height * 0.5) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const maxY = rect.height * 0.5;
+    
+    // Calculate angle based on vertical position
+    const angle = Math.max(-30, Math.min(5, ((y / maxY) * 35) - 30));
+    setNeedleAngle(angle);
+    
+    const isOnRecord = angle > -10;
+    onNeedleChange(isOnRecord);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener("mouseup", handleMouseUp);
+      return () => document.removeEventListener("mouseup", handleMouseUp);
+    }
+  }, [isDragging]);
+
+  return (
+    <div 
+      className="relative w-full max-w-md mx-auto aspect-square"
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+    >
+      <canvas
+        ref={canvasRef}
+        width={500}
+        height={500}
+        className={cn(
+          "w-full h-full transition-transform duration-1000",
+          isPlaying && "animate-spin-vinyl"
+        )}
+      />
+      
+      {/* Tonearm and needle */}
+      <div 
+        className="absolute top-0 right-8 w-32 h-48 origin-top-right transition-transform cursor-grab active:cursor-grabbing"
+        style={{ transform: `rotate(${needleAngle}deg)` }}
+      >
+        {/* Arm */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-40 bg-gradient-to-b from-muted to-muted-foreground rounded-full" />
+        
+        {/* Cartridge */}
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-4 h-6 bg-primary rounded" 
+             style={{ 
+               boxShadow: needleOnRecord ? "0 0 15px hsl(var(--primary))" : "none" 
+             }} 
+        />
+        
+        {/* Needle tip */}
+        <div className={cn(
+          "absolute bottom-0 left-1/2 -translate-x-1/2 w-0.5 h-3 bg-accent transition-all",
+          needleOnRecord && "animate-pulse-glow"
+        )} />
+      </div>
+
+      {/* Interaction hint */}
+      {!isPlaying && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="text-center bg-background/80 backdrop-blur-sm px-6 py-3 rounded-lg border border-primary/30">
+            <p className="text-sm text-muted-foreground">Drag the needle to the record</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
