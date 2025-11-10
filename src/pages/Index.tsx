@@ -331,7 +331,7 @@ const Index = () => {
         <div className="text-center space-y-2">
           <div className="flex items-center justify-center gap-2 md:gap-3 flex-wrap">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent animate-pulse-glow leading-tight">
-              Quantum Resonance Field
+              Vers3Dynamics Studio
             </h1>
             <button
               onClick={handleEasterEgg}
