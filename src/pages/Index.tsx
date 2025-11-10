@@ -5,6 +5,7 @@ import { AudioVisualizer } from "@/components/AudioVisualizer";
 import { EnhancedVisualizer } from "@/components/EnhancedVisualizer";
 import { QuantumField } from "@/components/QuantumField";
 import { Controls } from "@/components/Controls";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 import { evaluate } from "@strudel/transpiler";
 import { Music } from "lucide-react";
@@ -325,12 +326,16 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-3 sm:p-4 md:p-6 lg:p-8">
+    <div className="min-h-screen bg-background text-foreground p-3 sm:p-4 md:p-6 lg:p-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="flex items-center justify-center gap-2 md:gap-3 flex-wrap">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent animate-pulse-glow leading-tight">
+        <div className="text-center space-y-2 relative">
+          <div className="absolute top-0 right-0">
+            <ThemeToggle />
+          </div>
+          
+          <div className="flex items-center justify-center gap-2 md:gap-3 flex-wrap pt-2">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent animate-pulse-glow leading-tight">
               Vers3Dynamics Studio
             </h1>
             <button
@@ -349,7 +354,7 @@ const Index = () => {
         {/* Main content grid */}
         <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
           {/* Left side - Vinyl player and controls */}
-          <div className="space-y-4 md:space-y-6">
+          <div className="space-y-4 md:space-y-6 order-2 lg:order-1">
             <div className="relative">
               <QuantumField isPlaying={isPlaying} analyser={analyser} />
               <VinylPlayer 
@@ -366,7 +371,7 @@ const Index = () => {
               onReset={handleReset}
             />
 
-            <div className="hidden md:block">
+            <div className="hidden lg:block">
               <AudioVisualizer
                 isPlaying={isPlaying}
                 audioContext={audioContext}
@@ -376,7 +381,7 @@ const Index = () => {
           </div>
 
           {/* Right side - Code editor */}
-          <div className="space-y-3 md:space-y-4">
+          <div className="space-y-3 md:space-y-4 order-1 lg:order-2">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                 Live Code Editor
@@ -386,7 +391,7 @@ const Index = () => {
               </span>
             </div>
             
-            <div className="h-[400px] sm:h-[500px] md:h-[550px] lg:h-[600px]">
+            <div className="h-[350px] sm:h-[450px] md:h-[500px] lg:h-[600px] rounded-xl overflow-hidden border border-border/50">
               <CodeEditor value={code} onChange={setCode} />
             </div>
 
@@ -396,6 +401,15 @@ const Index = () => {
               analyser={analyser}
             />
           </div>
+        </div>
+
+        {/* Mobile-only visualizer */}
+        <div className="lg:hidden">
+          <AudioVisualizer
+            isPlaying={isPlaying}
+            audioContext={audioContext}
+            analyser={analyser}
+          />
         </div>
 
         {/* Footer info */}

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useTheme } from "next-themes";
 import Meyda from "meyda";
 
 interface EnhancedVisualizerProps {
@@ -12,6 +13,9 @@ export const EnhancedVisualizer = ({ isPlaying, audioContext, analyser }: Enhanc
   const spectrogramCanvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
   const meydaRef = useRef<any>(null);
+  const { theme } = useTheme();
+  
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     if (!isPlaying || !audioContext || !analyser) {
@@ -61,8 +65,13 @@ export const EnhancedVisualizer = ({ isPlaying, audioContext, analyser }: Enhanc
 
       // Draw Waveform with gradient and dynamic effects
       const bgGradient = waveformCtx.createLinearGradient(0, 0, 0, waveformCanvas.height);
-      bgGradient.addColorStop(0, "hsl(220, 30%, 6%)");
-      bgGradient.addColorStop(1, "hsl(220, 25%, 10%)");
+      if (isDark) {
+        bgGradient.addColorStop(0, "hsl(220, 30%, 6%)");
+        bgGradient.addColorStop(1, "hsl(220, 25%, 10%)");
+      } else {
+        bgGradient.addColorStop(0, "hsl(0, 0%, 98%)");
+        bgGradient.addColorStop(1, "hsl(0, 0%, 95%)");
+      }
       waveformCtx.fillStyle = bgGradient;
       waveformCtx.fillRect(0, 0, waveformCanvas.width, waveformCanvas.height);
 
@@ -113,8 +122,13 @@ export const EnhancedVisualizer = ({ isPlaying, audioContext, analyser }: Enhanc
 
       // Dynamic background gradient
       const specBgGradient = spectrogramCtx.createLinearGradient(0, 0, 0, spectrogramCanvas.height);
-      specBgGradient.addColorStop(0, "hsl(220, 30%, 6%)");
-      specBgGradient.addColorStop(1, "hsl(220, 25%, 10%)");
+      if (isDark) {
+        specBgGradient.addColorStop(0, "hsl(220, 30%, 6%)");
+        specBgGradient.addColorStop(1, "hsl(220, 25%, 10%)");
+      } else {
+        specBgGradient.addColorStop(0, "hsl(0, 0%, 98%)");
+        specBgGradient.addColorStop(1, "hsl(0, 0%, 95%)");
+      }
       spectrogramCtx.fillStyle = specBgGradient;
       spectrogramCtx.fillRect(0, 0, spectrogramCanvas.width, spectrogramCanvas.height);
 
@@ -182,7 +196,7 @@ export const EnhancedVisualizer = ({ isPlaying, audioContext, analyser }: Enhanc
         meydaRef.current = null;
       }
     };
-  }, [isPlaying, audioContext, analyser]);
+  }, [isPlaying, audioContext, analyser, isDark]);
 
   return (
     <div className="space-y-3 md:space-y-4">
