@@ -325,31 +325,31 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-background text-foreground p-3 sm:p-4 md:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="flex items-center justify-center gap-3">
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-pulse-glow">
+          <div className="flex items-center justify-center gap-2 md:gap-3 flex-wrap">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent animate-pulse-glow leading-tight">
               Quantum Resonance Field
             </h1>
             <button
               onClick={handleEasterEgg}
-              className="p-2 hover:scale-110 transition-transform"
+              className="p-2 hover:scale-110 transition-transform touch-manipulation"
               aria-label="Easter egg"
             >
-              <Music className="w-6 h-6 text-primary/50 hover:text-primary" />
+              <Music className="w-5 h-5 md:w-6 md:h-6 text-primary/60 hover:text-primary transition-colors" />
             </button>
           </div>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-sm md:text-base lg:text-lg px-4">
             Live code music with Strudel & vinyl interaction
           </p>
         </div>
 
         {/* Main content grid */}
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
           {/* Left side - Vinyl player and controls */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             <div className="relative">
               <QuantumField isPlaying={isPlaying} analyser={analyser} />
               <VinylPlayer 
@@ -366,25 +366,27 @@ const Index = () => {
               onReset={handleReset}
             />
 
-            <AudioVisualizer
-              isPlaying={isPlaying}
-              audioContext={audioContext}
-              analyser={analyser}
-            />
+            <div className="hidden md:block">
+              <AudioVisualizer
+                isPlaying={isPlaying}
+                audioContext={audioContext}
+                analyser={analyser}
+              />
+            </div>
           </div>
 
           {/* Right side - Code editor */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-semibold text-primary">
+          <div className="space-y-3 md:space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                 Live Code Editor
               </h2>
-              <span className="text-sm text-muted-foreground">
-                Edit the code and click Play to hear changes
+              <span className="text-xs md:text-sm text-muted-foreground">
+                Edit & click Play to hear
               </span>
             </div>
             
-            <div className="h-[600px]">
+            <div className="h-[400px] sm:h-[500px] md:h-[550px] lg:h-[600px]">
               <CodeEditor value={code} onChange={setCode} />
             </div>
 
@@ -397,9 +399,9 @@ const Index = () => {
         </div>
 
         {/* Footer info */}
-        <div className="text-center text-sm text-muted-foreground space-y-2 pt-8 border-t border-border">
-          <p>Drag the tonearm needle onto the vinyl record to start playback</p>
-          <p className="text-xs">Built with Strudel, React & Web Audio API</p>
+        <div className="text-center text-xs md:text-sm text-muted-foreground space-y-1 md:space-y-2 pt-6 md:pt-8 border-t border-border/50">
+          <p className="px-4">Drag the tonearm needle onto the vinyl record to start playback</p>
+          <p className="text-[10px] md:text-xs opacity-70">Built with Strudel, React & Web Audio API</p>
         </div>
       </div>
     </div>

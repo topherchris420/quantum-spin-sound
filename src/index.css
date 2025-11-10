@@ -8,46 +8,51 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 220 25% 8%;
-    --foreground: 180 100% 90%;
+    --background: 220 30% 6%;
+    --foreground: 180 100% 95%;
 
-    --card: 220 20% 12%;
-    --card-foreground: 180 100% 90%;
+    --card: 220 25% 10%;
+    --card-foreground: 180 100% 95%;
 
-    --popover: 220 22% 10%;
-    --popover-foreground: 180 100% 90%;
+    --popover: 220 28% 8%;
+    --popover-foreground: 180 100% 95%;
 
-    --primary: 180 100% 50%;
-    --primary-foreground: 220 25% 8%;
+    --primary: 180 100% 55%;
+    --primary-foreground: 220 30% 6%;
 
-    --secondary: 200 80% 35%;
-    --secondary-foreground: 180 100% 95%;
+    --secondary: 280 85% 65%;
+    --secondary-foreground: 220 30% 6%;
 
-    --muted: 220 20% 18%;
-    --muted-foreground: 180 30% 60%;
+    --muted: 220 25% 15%;
+    --muted-foreground: 180 20% 70%;
 
-    --accent: 170 100% 45%;
-    --accent-foreground: 220 25% 8%;
+    --accent: 320 100% 60%;
+    --accent-foreground: 220 30% 6%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 180 100% 95%;
+    --destructive-foreground: 180 100% 98%;
 
-    --border: 220 20% 20%;
-    --input: 220 20% 15%;
-    --ring: 180 100% 50%;
+    --border: 220 25% 18%;
+    --input: 220 25% 12%;
+    --ring: 180 100% 55%;
 
-    --radius: 0.75rem;
+    --radius: 0.875rem;
 
-    /* Quantum glow effects */
-    --quantum-glow: 180 100% 50%;
-    --quantum-glow-soft: 180 80% 40%;
-    --vinyl-surface: 220 15% 15%;
-    --vinyl-label: 220 20% 25%;
+    /* Quantum glow effects - enhanced */
+    --quantum-glow: 180 100% 55%;
+    --quantum-glow-soft: 180 80% 45%;
+    --quantum-purple: 280 85% 65%;
+    --quantum-pink: 320 100% 60%;
+    --vinyl-surface: 220 20% 14%;
+    --vinyl-label: 220 25% 22%;
     
-    /* Gradients */
-    --gradient-quantum: linear-gradient(135deg, hsl(180 100% 50% / 0.2), hsl(200 100% 60% / 0.1));
-    --glow-shadow: 0 0 20px hsl(180 100% 50% / 0.3), 0 0 40px hsl(180 100% 50% / 0.15);
-    --glow-shadow-strong: 0 0 30px hsl(180 100% 50% / 0.5), 0 0 60px hsl(180 100% 50% / 0.3);
+    /* Gradients - more vibrant */
+    --gradient-quantum: linear-gradient(135deg, hsl(180 100% 55% / 0.25), hsl(280 85% 65% / 0.15));
+    --gradient-visualizer: linear-gradient(180deg, hsl(180 100% 55%), hsl(280 85% 65%), hsl(320 100% 60%));
+    --glow-shadow: 0 0 25px hsl(180 100% 55% / 0.4), 0 0 50px hsl(180 100% 55% / 0.2);
+    --glow-shadow-strong: 0 0 35px hsl(180 100% 55% / 0.6), 0 0 70px hsl(180 100% 55% / 0.3);
+    --glow-shadow-purple: 0 0 30px hsl(280 85% 65% / 0.5), 0 0 60px hsl(280 85% 65% / 0.25);
+    --glow-shadow-pink: 0 0 30px hsl(320 100% 60% / 0.5), 0 0 60px hsl(320 100% 60% / 0.25);
   }
 }
 
@@ -57,6 +62,15 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
   }
 }

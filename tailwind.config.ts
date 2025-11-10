@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Space Grotesk', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['JetBrains Mono', 'Courier New', 'monospace'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -50,6 +54,8 @@ export default {
         quantum: {
           glow: "hsl(var(--quantum-glow))",
           soft: "hsl(var(--quantum-glow-soft))",
+          purple: "hsl(var(--quantum-purple))",
+          pink: "hsl(var(--quantum-pink))",
         },
         vinyl: {
           surface: "hsl(var(--vinyl-surface))",
