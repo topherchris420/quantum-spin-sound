@@ -51,16 +51,11 @@ const Index = () => {
   const easterEggAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // Initialize audio context
-    const initAudio = async () => {
+    // Initialize audio context immediately
+    const initAudio = () => {
       try {
         const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
         const ctx = new AudioContext();
-        
-        // Resume context on user interaction
-        if (ctx.state === 'suspended') {
-          await ctx.resume();
-        }
         
         setAudioContext(ctx);
         
@@ -77,10 +72,10 @@ const Index = () => {
         scratchFilterRef.current = filter;
         
         setAudioInitialized(true);
-        toast.success("Quantum resonance field initialized!");
+        console.log("Audio context created successfully, state:", ctx.state);
       } catch (error) {
         console.error("Audio initialization failed:", error);
-        toast.error("Failed to initialize audio");
+        toast.error("Failed to initialize audio: " + (error as Error).message);
       }
     };
 
@@ -94,14 +89,10 @@ const Index = () => {
   }, []);
 
   const evaluateCode = useCallback(async () => {
-    console.log("evaluateCode called", { audioInitialized, audioContext: !!audioContext });
-    
-    if (!audioInitialized || !audioContext) {
-      toast.error("Audio not initialized yet");
+    if (!audioContext) {
+      toast.error("Audio not initialized yet. Please refresh the page.");
       return;
     }
-
-    console.log("Audio context state:", audioContext.state);
     
     try {
       const now = audioContext.currentTime;
@@ -216,7 +207,6 @@ const Index = () => {
         mainGain 
       };
       
-      console.log("Audio started successfully", { oscillatorCount: oscillators.length });
       toast.success("Quantum resonance field activated!");
     } catch (error) {
       console.error("Audio error:", error);
@@ -225,14 +215,25 @@ const Index = () => {
   }, [code, audioInitialized, analyser, audioContext]);
 
   const handlePlayPause = async () => {
-    console.log("handlePlayPause called", { isPlaying, audioContext: !!audioContext });
-    
     if (!isPlaying) {
-      if (audioContext?.state === 'suspended') {
-        console.log("Resuming suspended audio context");
-        await audioContext.resume();
-        console.log("Audio context resumed, state:", audioContext.state);
+      // Ensure audio context exists and is running
+      if (!audioContext) {
+        toast.error("Audio system not ready. Please refresh the page.");
+        return;
       }
+      
+      // Resume audio context if suspended (required by browser autoplay policy)
+      if (audioContext.state === 'suspended') {
+        try {
+          await audioContext.resume();
+          console.log("Audio context resumed, state:", audioContext.state);
+        } catch (error) {
+          console.error("Failed to resume audio context:", error);
+          toast.error("Failed to start audio");
+          return;
+        }
+      }
+      
       await evaluateCode();
       setIsPlaying(true);
     } else {
