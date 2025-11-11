@@ -146,16 +146,16 @@ export const VinylPlayer = ({ isPlaying, onNeedleChange, onScratch, audioContext
 
   return (
     <div 
-      className="relative w-full max-w-md mx-auto aspect-square"
+      className="relative w-full max-w-[90vw] sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto aspect-square touch-manipulation"
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
     >
       <canvas
         ref={canvasRef}
-        width={500}
-        height={500}
+        width={600}
+        height={600}
         className={cn(
-          "w-full h-full transition-transform duration-1000",
+          "w-full h-full transition-transform duration-1000 touch-none",
           isDraggingRecord && "cursor-grabbing",
           !isDraggingRecord && "cursor-grab",
           isPlaying && !isDraggingRecord && "animate-spin-vinyl"
@@ -165,32 +165,32 @@ export const VinylPlayer = ({ isPlaying, onNeedleChange, onScratch, audioContext
       
       {/* Tonearm and needle */}
       <div 
-        className="absolute top-0 right-8 w-32 h-48 origin-top-right transition-transform cursor-grab active:cursor-grabbing"
+        className="absolute top-0 right-4 sm:right-6 md:right-8 w-24 h-36 sm:w-32 sm:h-48 md:w-40 md:h-56 origin-top-right transition-transform cursor-grab active:cursor-grabbing touch-manipulation"
         style={{ transform: `rotate(${needleAngle}deg)` }}
       >
         {/* Arm */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-40 bg-gradient-to-b from-muted to-muted-foreground rounded-full" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 sm:w-2 h-32 sm:h-40 md:h-48 bg-gradient-to-b from-muted to-muted-foreground rounded-full shadow-lg" />
         
         {/* Cartridge */}
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-4 h-6 bg-primary rounded" 
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-3 h-5 sm:w-4 sm:h-6 bg-primary rounded shadow-md" 
              style={{ 
-               boxShadow: needleOnRecord ? "0 0 15px hsl(var(--primary))" : "none" 
+               boxShadow: needleOnRecord ? "0 0 20px hsl(var(--primary))" : "0 2px 4px rgba(0,0,0,0.3)" 
              }} 
         />
         
         {/* Needle tip */}
         <div className={cn(
-          "absolute bottom-0 left-1/2 -translate-x-1/2 w-0.5 h-3 bg-accent transition-all",
+          "absolute bottom-0 left-1/2 -translate-x-1/2 w-0.5 h-2 sm:h-3 bg-accent transition-all shadow-sm",
           needleOnRecord && "animate-pulse-glow"
         )} />
       </div>
 
       {/* Interaction hint */}
       {!isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="text-center bg-background/80 backdrop-blur-sm px-6 py-3 rounded-lg border border-primary/30">
-            <p className="text-sm text-muted-foreground">Drag the needle to the record</p>
-            <p className="text-xs text-muted-foreground mt-1">Drag the record while playing to scratch</p>
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-4">
+          <div className="text-center bg-background/90 backdrop-blur-sm px-4 py-2 sm:px-6 sm:py-3 rounded-lg border border-primary/30 shadow-lg max-w-xs">
+            <p className="text-xs sm:text-sm text-muted-foreground font-medium">Drag the needle to the record</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground/80 mt-1">Drag the record while playing to scratch</p>
           </div>
         </div>
       )}
