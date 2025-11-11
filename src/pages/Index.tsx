@@ -345,7 +345,14 @@ const Index = () => {
           
           <div className="flex items-center justify-center gap-2 md:gap-3 flex-wrap pt-2">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent animate-pulse-glow leading-tight">
-              Vers3Dynamics Studio
+              <a 
+                href="https://vers3dynamics.com/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:opacity-80 transition-opacity"
+              >
+                Vers3Dynamics
+              </a> Studio
             </h1>
             <button
               onClick={handleEasterEgg}
