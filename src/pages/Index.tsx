@@ -94,11 +94,15 @@ const Index = () => {
   }, []);
 
   const evaluateCode = useCallback(async () => {
+    console.log("evaluateCode called", { audioInitialized, audioContext: !!audioContext });
+    
     if (!audioInitialized || !audioContext) {
       toast.error("Audio not initialized yet");
       return;
     }
 
+    console.log("Audio context state:", audioContext.state);
+    
     try {
       const now = audioContext.currentTime;
       const oscillators: OscillatorNode[] = [];
@@ -212,6 +216,7 @@ const Index = () => {
         mainGain 
       };
       
+      console.log("Audio started successfully", { oscillatorCount: oscillators.length });
       toast.success("Quantum resonance field activated!");
     } catch (error) {
       console.error("Audio error:", error);
@@ -220,9 +225,13 @@ const Index = () => {
   }, [code, audioInitialized, analyser, audioContext]);
 
   const handlePlayPause = async () => {
+    console.log("handlePlayPause called", { isPlaying, audioContext: !!audioContext });
+    
     if (!isPlaying) {
       if (audioContext?.state === 'suspended') {
+        console.log("Resuming suspended audio context");
         await audioContext.resume();
+        console.log("Audio context resumed, state:", audioContext.state);
       }
       await evaluateCode();
       setIsPlaying(true);
