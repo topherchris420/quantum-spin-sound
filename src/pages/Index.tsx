@@ -336,104 +336,126 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-1.5 sm:p-4 md:p-6 lg:p-8 transition-colors duration-300 touch-pan-y">
-      <div className="max-w-7xl mx-auto space-y-2 sm:space-y-4 md:space-y-6 lg:space-y-8">
-        {/* Header */}
-        <header className="text-center space-y-0.5 sm:space-y-2 relative">
-          <div className="absolute top-0 right-0 z-10">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Atmospheric background layer */}
+      <div className="fixed inset-0 pointer-events-none opacity-60">
+        <QuantumField isPlaying={isPlaying} analyser={analyser} />
+      </div>
+
+      {/* Main artistic container */}
+      <div className="relative z-10">
+        {/* Header - Unified artistic title */}
+        <header className="p-3 sm:p-4 md:p-6">
+          <div className="flex items-center justify-between max-w-7xl mx-auto">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Music className="w-5 h-5 sm:w-6 sm:h-6 text-quantum-glow artistic-glow" />
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight">
+                <span className="bg-gradient-to-r from-quantum-glow via-quantum-purple to-quantum-pink bg-clip-text text-transparent">
+                  Quantum Resonance Studio
+                </span>
+              </h1>
+            </div>
             <ThemeToggle />
           </div>
-          
-          <div className="flex items-center justify-center gap-1 sm:gap-2 md:gap-3 flex-wrap pt-8 sm:pt-2">
-            <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent animate-pulse-glow leading-tight px-2">
-              <a 
-                href="https://vers3dynamics.com/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="hover:opacity-80 transition-opacity touch-manipulation inline-block min-h-[44px] flex items-center"
-              >
-                Vers3Dynamics
-              </a> Studio
-            </h1>
-            <button
-              onClick={handleEasterEgg}
-              className="p-2 hover:scale-110 transition-transform touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
-              aria-label="Easter egg"
-            >
-              <Music className="w-4 h-4 md:w-6 md:h-6 text-primary/60 hover:text-primary transition-colors" />
-            </button>
-          </div>
-          <p className="text-muted-foreground text-[10px] sm:text-sm md:text-base px-4">
-            Live code music with Strudel & vinyl interaction
-          </p>
         </header>
 
-        {/* Main content grid */}
-        <main className="grid lg:grid-cols-2 gap-2 sm:gap-4 md:gap-6 lg:gap-8">
-          {/* Left side - Vinyl player and controls */}
-          <section className="space-y-2 sm:space-y-4 md:space-y-6 order-2 lg:order-1">
-            <div className="relative">
-              <QuantumField isPlaying={isPlaying} analyser={analyser} />
-              <VinylPlayer 
-                isPlaying={isPlaying} 
-                onNeedleChange={handleNeedleChange}
-                onScratch={handleScratch}
-                audioContext={audioContext}
-              />
-            </div>
+        {/* Main artistic workspace */}
+        <main className="px-2 sm:px-4 md:px-6 pb-4 space-y-3 sm:space-y-4 md:space-y-5 max-w-7xl mx-auto">
+          
+          {/* Central focal point - Vinyl player with immersive frame */}
+          <section 
+            className="relative rounded-3xl overflow-hidden atmospheric-blur border border-border/50 shadow-[var(--shadow-artistic)]"
+            style={{ background: 'linear-gradient(135deg, hsl(var(--card) / 0.8), hsl(var(--card) / 0.6))' }}
+          >
+            <div className="absolute inset-0 opacity-30 pointer-events-none" 
+                 style={{ background: 'var(--gradient-quantum)' }} />
             
-            <Controls
-              isPlaying={isPlaying}
-              onPlayPause={handlePlayPause}
-              onReset={handleReset}
-            />
-
-            <div className="hidden lg:block">
-              <AudioVisualizer
-                isPlaying={isPlaying}
-                audioContext={audioContext}
-                analyser={analyser}
-              />
+            <div className="relative p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center">
+              <div onClick={handleEasterEgg}>
+                <VinylPlayer
+                  isPlaying={isPlaying}
+                  onScratch={handleScratch}
+                  onNeedleChange={handleNeedleChange}
+                />
+              </div>
             </div>
           </section>
 
-          {/* Right side - Code editor */}
-          <section className="space-y-1.5 sm:space-y-3 md:space-y-4 order-1 lg:order-2">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2">
-              <h2 className="text-base sm:text-xl md:text-2xl font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Live Code Editor
-              </h2>
-              <span className="text-[9px] sm:text-xs md:text-sm text-muted-foreground">
-                Edit & click Play to hear
+          {/* Unified control & visualization symphony */}
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-5">
+            
+            {/* Left panel - Controls & Audio visualization */}
+            <div className="space-y-3 sm:space-y-4">
+              {/* Controls with artistic framing */}
+              <div 
+                className="rounded-2xl atmospheric-blur border border-border/50 p-3 sm:p-4 shadow-[var(--shadow-artistic)] unified-transition hover:shadow-[var(--glow-shadow)]"
+                style={{ background: 'linear-gradient(135deg, hsl(var(--card) / 0.7), hsl(var(--card) / 0.5))' }}
+              >
+                <Controls
+                  isPlaying={isPlaying}
+                  onPlayPause={handlePlayPause}
+                  onReset={handleReset}
+                />
+              </div>
+
+              {/* Audio visualizer - immersive frequency display */}
+              <div 
+                className="rounded-2xl overflow-hidden border border-quantum-glow/30 artistic-glow"
+                style={{ background: 'linear-gradient(180deg, hsl(var(--card) / 0.5), hsl(var(--card) / 0.3))' }}
+              >
+                <AudioVisualizer
+                  isPlaying={isPlaying}
+                  audioContext={audioContext}
+                  analyser={analyser}
+                />
+              </div>
+
+              {/* Enhanced visualizer - artistic expression */}
+              <div 
+                className="rounded-2xl overflow-hidden border border-quantum-purple/30"
+                style={{ background: 'linear-gradient(135deg, hsl(var(--card) / 0.4), hsl(var(--card) / 0.2))' }}
+              >
+                <EnhancedVisualizer
+                  isPlaying={isPlaying}
+                  audioContext={audioContext}
+                  analyser={analyser}
+                />
+              </div>
+            </div>
+
+            {/* Right panel - Code editor as creative instrument */}
+            <div 
+              className="rounded-2xl atmospheric-blur border border-border/50 overflow-hidden shadow-[var(--shadow-artistic)] unified-transition hover:shadow-[var(--glow-shadow-purple)]"
+              style={{ background: 'linear-gradient(135deg, hsl(var(--card) / 0.8), hsl(var(--card) / 0.6))' }}
+            >
+              <div className="p-3 sm:p-4 border-b border-border/50">
+                <h2 className="text-base sm:text-lg font-semibold bg-gradient-to-r from-quantum-purple to-quantum-pink bg-clip-text text-transparent">
+                  Sonic Code Canvas
+                </h2>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                  Compose your quantum symphony
+                </p>
+              </div>
+              
+              <div className="p-2 sm:p-3">
+                <CodeEditor
+                  value={code}
+                  onChange={setCode}
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Footer - Artistic signature */}
+          <footer className="text-center py-4 sm:py-6">
+            <p className="text-xs sm:text-sm text-muted-foreground/70 tracking-wide">
+              <span className="bg-gradient-to-r from-quantum-glow via-quantum-purple to-quantum-pink bg-clip-text text-transparent font-medium">
+                Gesamtkunstwerk
               </span>
-            </div>
-            
-            <div className="h-[220px] xs:h-[280px] sm:h-[400px] md:h-[500px] lg:h-[600px] rounded-lg md:rounded-xl overflow-hidden border border-border/50 touch-pan-y">
-              <CodeEditor value={code} onChange={setCode} />
-            </div>
-
-            <EnhancedVisualizer
-              isPlaying={isPlaying}
-              audioContext={audioContext}
-              analyser={analyser}
-            />
-          </section>
+              {" "}- A unified artistic experience
+            </p>
+          </footer>
         </main>
-
-        {/* Mobile-only visualizer */}
-        <section className="lg:hidden">
-          <AudioVisualizer
-            isPlaying={isPlaying}
-            audioContext={audioContext}
-            analyser={analyser}
-          />
-        </section>
-
-        {/* Footer info */}
-        <footer className="text-center text-[9px] sm:text-xs md:text-sm text-muted-foreground space-y-0.5 sm:space-y-2 pt-2 sm:pt-4 md:pt-6 lg:pt-8 border-t border-border/50">
-          <p className="px-2 sm:px-4">Drag the tonearm needle onto the vinyl record to start playback</p>
-          <p className="text-[8px] sm:text-[10px] md:text-xs opacity-70">Built with Strudel, React & Web Audio API</p>
-        </footer>
       </div>
     </div>
   );
