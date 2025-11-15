@@ -56,6 +56,7 @@ export default {
           soft: "hsl(var(--quantum-glow-soft))",
           purple: "hsl(var(--quantum-purple))",
           pink: "hsl(var(--quantum-pink))",
+          gold: "hsl(var(--quantum-gold))",
         },
         vinyl: {
           surface: "hsl(var(--vinyl-surface))",

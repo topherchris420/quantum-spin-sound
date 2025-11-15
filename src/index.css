@@ -36,23 +36,32 @@ All colors MUST be HSL.
     --input: 220 15% 90%;
     --ring: 180 85% 45%;
 
-    --radius: 0.875rem;
+    --radius: 1.25rem;
 
-    /* Light mode quantum effects */
+    /* Gesamtkunstwerk - Light mode artistic palette */
     --quantum-glow: 180 85% 45%;
     --quantum-glow-soft: 180 70% 50%;
     --quantum-purple: 280 75% 55%;
     --quantum-pink: 320 90% 50%;
+    --quantum-gold: 45 95% 55%;
     --vinyl-surface: 220 10% 88%;
     --vinyl-label: 220 15% 75%;
     
-    /* Light mode gradients */
-    --gradient-quantum: linear-gradient(135deg, hsl(180 85% 45% / 0.15), hsl(280 75% 55% / 0.1));
+    /* Artistic gradients for unified aesthetic */
+    --gradient-quantum: linear-gradient(135deg, hsl(180 85% 45% / 0.2), hsl(280 75% 55% / 0.15), hsl(320 90% 50% / 0.1));
     --gradient-visualizer: linear-gradient(180deg, hsl(180 85% 45%), hsl(280 75% 55%), hsl(320 90% 50%));
+    --gradient-atmospheric: radial-gradient(ellipse at top, hsl(180 85% 45% / 0.08), transparent 50%),
+                            radial-gradient(ellipse at bottom, hsl(280 75% 55% / 0.08), transparent 50%);
+    --gradient-vinyl: conic-gradient(from 0deg at 50% 50%, 
+                      hsl(220 10% 88%), hsl(220 10% 75%), hsl(220 10% 88%));
+    
+    /* Expressive shadows for depth & unity */
     --glow-shadow: 0 0 20px hsl(180 85% 45% / 0.3), 0 0 40px hsl(180 85% 45% / 0.15);
     --glow-shadow-strong: 0 0 30px hsl(180 85% 45% / 0.5), 0 0 60px hsl(180 85% 45% / 0.25);
     --glow-shadow-purple: 0 0 25px hsl(280 75% 55% / 0.4), 0 0 50px hsl(280 75% 55% / 0.2);
     --glow-shadow-pink: 0 0 25px hsl(320 90% 50% / 0.4), 0 0 50px hsl(320 90% 50% / 0.2);
+    --glow-shadow-gold: 0 0 25px hsl(45 95% 55% / 0.4), 0 0 50px hsl(45 95% 55% / 0.2);
+    --shadow-artistic: 0 4px 20px hsl(220 30% 10% / 0.1), 0 1px 4px hsl(220 30% 10% / 0.06);
   }
 
   .dark {
@@ -84,21 +93,30 @@ All colors MUST be HSL.
     --input: 220 25% 12%;
     --ring: 180 100% 55%;
 
-    /* Dark mode quantum effects */
+    /* Gesamtkunstwerk - Dark mode artistic palette */
     --quantum-glow: 180 100% 55%;
     --quantum-glow-soft: 180 80% 45%;
     --quantum-purple: 280 85% 65%;
     --quantum-pink: 320 100% 60%;
+    --quantum-gold: 45 100% 65%;
     --vinyl-surface: 220 20% 14%;
     --vinyl-label: 220 25% 22%;
     
-    /* Dark mode gradients */
-    --gradient-quantum: linear-gradient(135deg, hsl(180 100% 55% / 0.25), hsl(280 85% 65% / 0.15));
+    /* Immersive dark gradients */
+    --gradient-quantum: linear-gradient(135deg, hsl(180 100% 55% / 0.3), hsl(280 85% 65% / 0.2), hsl(320 100% 60% / 0.15));
     --gradient-visualizer: linear-gradient(180deg, hsl(180 100% 55%), hsl(280 85% 65%), hsl(320 100% 60%));
+    --gradient-atmospheric: radial-gradient(ellipse at top, hsl(180 100% 55% / 0.12), transparent 60%),
+                            radial-gradient(ellipse at bottom, hsl(280 85% 65% / 0.12), transparent 60%);
+    --gradient-vinyl: conic-gradient(from 0deg at 50% 50%, 
+                      hsl(220 20% 14%), hsl(220 20% 10%), hsl(220 20% 14%));
+    
+    /* Dramatic shadows for immersion */
     --glow-shadow: 0 0 25px hsl(180 100% 55% / 0.4), 0 0 50px hsl(180 100% 55% / 0.2);
     --glow-shadow-strong: 0 0 35px hsl(180 100% 55% / 0.6), 0 0 70px hsl(180 100% 55% / 0.3);
     --glow-shadow-purple: 0 0 30px hsl(280 85% 65% / 0.5), 0 0 60px hsl(280 85% 65% / 0.25);
     --glow-shadow-pink: 0 0 30px hsl(320 100% 60% / 0.5), 0 0 60px hsl(320 100% 60% / 0.25);
+    --glow-shadow-gold: 0 0 30px hsl(45 100% 65% / 0.5), 0 0 60px hsl(45 100% 65% / 0.25);
+    --shadow-artistic: 0 8px 32px hsl(220 30% 6% / 0.4), 0 2px 8px hsl(220 30% 6% / 0.3);
   }
 }
 
@@ -110,6 +128,8 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground font-sans;
     font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background-image: var(--gradient-atmospheric);
+    background-attachment: fixed;
   }
 
   code, pre, .font-mono {
@@ -118,5 +138,22 @@ All colors MUST be HSL.
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight;
+  }
+
+  /* Gesamtkunstwerk utility classes */
+  .artistic-glow {
+    filter: drop-shadow(var(--glow-shadow));
+  }
+
+  .artistic-glow-strong {
+    filter: drop-shadow(var(--glow-shadow-strong));
+  }
+
+  .atmospheric-blur {
+    backdrop-filter: blur(12px) saturate(150%);
+  }
+
+  .unified-transition {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
