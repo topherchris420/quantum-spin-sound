@@ -1,11 +1,11 @@
 <div align="center">
   <img src="public/logo.jpg" alt="Vars Dynamics Logo" width="400"/>
   
-  # Vars Dynamics
+  # Vers3Dynamics Studio
   
   ### Quantum Resonance Field - Live Music Coding Experience
   
-  [![Built with Lovable](https://img.shields.io/badge/Built%20with-Lovable-ff69b4)](https://lovable.dev)
+  [![Built by Vers3Dynamics](https://img.shields.io/badge/Built%20by-Vers3Dynamics-ff69b4)](https://vers3dynamics.com)
   [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
   
 </div>
@@ -14,7 +14,7 @@
 
 ## 🎵 About
 
-**Vars Dynamics** is an innovative live coding music platform that combines the power of [Strudel](https://strudel.cc/) with immersive quantum-inspired visualizations. Create generative music in real-time while experiencing interactive vinyl turntable simulation, advanced audio visualizations, and mesmerizing quantum field animations.
+**Vers3Dynamics** is an innovative live coding music platform that combines the power of [Strudel](https://strudel.cc/) with immersive quantum-inspired visualizations. Create generative music in real-time while experiencing interactive vinyl turntable simulation, advanced audio visualizations, and mesmerizing quantum field animations.
 
 ## ✨ Features
 
@@ -44,15 +44,11 @@
 ## 🎮 Getting Started
 
 ### Play Online
-Visit the [live demo](https://lovable.dev/projects/8ddacc8a-c4c5-4dc8-886c-c9bbfee73975) and start creating music immediately!
+Visit the [live demo]([https://vers3dynamics-studio.vercel.app/]) and start creating music immediately!
 
 ### Local Development
 
 There are several ways to edit and run this application locally:
-
-#### 🎨 Use Lovable (Recommended)
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/8ddacc8a-c4c5-4dc8-886c-c9bbfee73975) and start prompting. Changes made via Lovable will be committed automatically to this repo.
 
 #### 💻 Use Your Preferred IDE
 
@@ -105,10 +101,6 @@ The app uses a semantic token design system. Customize colors and animations in:
 ## 📄 License
 
 MIT License - feel free to use this project for your own creative experiments!
-
-## 🚀 Deployment
-
-Simply open [Lovable](https://lovable.dev/projects/8ddacc8a-c4c5-4dc8-886c-c9bbfee73975) and click on **Share → Publish**.
 
 ### Custom Domain
 
