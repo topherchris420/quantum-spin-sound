@@ -349,11 +349,11 @@ const Index = () => {
           <div className="flex items-center justify-between max-w-7xl mx-auto">
             <div className="flex items-center gap-2 sm:gap-3">
               <Music className="w-5 h-5 sm:w-6 sm:h-6 text-quantum-glow artistic-glow" />
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight">
-                <span className="bg-gradient-to-r from-quantum-glow via-quantum-purple to-quantum-pink bg-clip-text text-transparent">
-                  Quantum Resonance Studio
-                </span>
-              </h1>
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight">
+              <span className="bg-gradient-to-r from-quantum-glow via-quantum-purple to-quantum-pink bg-clip-text text-transparent">
+                Vers3Dynamics Studio
+              </span>
+            </h1>
             </div>
             <ThemeToggle />
           </div>
