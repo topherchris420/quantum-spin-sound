@@ -14,7 +14,7 @@
 
 ## 🎵 About
 
-**Vers3Dynamics** is an innovative live coding music platform that combines the power of [Strudel](https://strudel.cc/) with immersive quantum-inspired visualizations. Create generative music in real-time while experiencing interactive vinyl turntable simulation, advanced audio visualizations, and mesmerizing quantum field animations.
+**Vers3Dynamics Studio** is an innovative live coding music platform that combines the power of [Strudel](https://strudel.cc/) with immersive quantum-inspired visualizations. Create generative music in real-time while experiencing interactive vinyl turntable simulation, advanced audio visualizations, and mesmerizing quantum field animations.
 
 ## ✨ Features
 
