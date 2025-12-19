@@ -37,10 +37,6 @@
 - **Framer Motion** - Smooth animations
 - **CodeMirror** - Professional code editor
 
-## 📦 Project Info
-
-**URL**: https://lovable.dev/projects/8ddacc8a-c4c5-4dc8-886c-c9bbfee73975
-
 ## 🎮 Getting Started
 
 ### Play Online
@@ -102,10 +98,6 @@ The app uses a semantic token design system. Customize colors and animations in:
 
 MIT License - feel free to use this project for your own creative experiments!
 
-### Custom Domain
-
-Navigate to **Project > Settings > Domains** and click **Connect Domain**.  
-Read more: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
 
 ## 🤝 Contributing
 
@@ -120,5 +112,5 @@ Contributions are welcome! Feel free to open issues or submit pull requests.
 ---
 
 <div align="center">
-  Made with 💜 using <a href="https://lovable.dev">Lovable</a>
+  Made with 💜 from <a href="https://vers3dynamics.com">Vers3Dynamics</a>
 </div>
