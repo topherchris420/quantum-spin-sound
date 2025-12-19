@@ -1,7 +1,7 @@
 <div align="center">
   <img src="public/logo.jpg" alt="Vars Dynamics Logo" width="400"/>
   
-  # Vers3Dynamics Studio
+  # Vers3Dynamics' R.A.I.N. Lab Music Studio
   
   ### Quantum Resonance Field - Live Music Coding Experience
   
