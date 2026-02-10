@@ -7,7 +7,6 @@ export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // Avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -15,9 +14,9 @@ export function ThemeToggle() {
   if (!mounted) {
     return (
       <Button
-        variant="outline"
+        variant="ghost"
         size="icon"
-        className="h-9 w-9 rounded-full border-primary/30 bg-card/50 backdrop-blur-sm"
+        className="h-9 w-9 rounded-full"
       >
         <Sun className="h-4 w-4" />
       </Button>
@@ -26,16 +25,16 @@ export function ThemeToggle() {
 
   return (
     <Button
-      variant="outline"
+      variant="ghost"
       size="icon"
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="h-9 w-9 rounded-full border-primary/30 bg-card/50 backdrop-blur-sm hover:bg-card transition-colors"
+      className="h-9 w-9 rounded-full glass-panel hover:shadow-[var(--glow-shadow)] unified-transition"
       aria-label="Toggle theme"
     >
       {theme === "dark" ? (
-        <Sun className="h-4 w-4 text-primary transition-transform hover:rotate-12" />
+        <Sun className="h-4 w-4 text-quantum-gold transition-transform hover:rotate-12" />
       ) : (
-        <Moon className="h-4 w-4 text-primary transition-transform hover:-rotate-12" />
+        <Moon className="h-4 w-4 text-quantum-purple transition-transform hover:-rotate-12" />
       )}
     </Button>
   );

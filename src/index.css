@@ -1,122 +1,128 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 220 30% 10%;
+    --background: 240 5% 96%;
+    --foreground: 240 20% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 30% 10%;
+    --card-foreground: 240 20% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 30% 10%;
+    --popover-foreground: 240 20% 12%;
 
-    --primary: 180 85% 45%;
+    --primary: 168 80% 42%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 280 75% 55%;
+    --secondary: 270 60% 58%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 15% 92%;
-    --muted-foreground: 220 20% 40%;
+    --muted: 240 10% 91%;
+    --muted-foreground: 240 10% 45%;
 
-    --accent: 320 90% 50%;
+    --accent: 330 85% 55%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 85%;
-    --input: 220 15% 90%;
-    --ring: 180 85% 45%;
+    --border: 240 10% 88%;
+    --input: 240 10% 92%;
+    --ring: 168 80% 42%;
 
-    --radius: 1.25rem;
+    --radius: 1rem;
 
-    /* Gesamtkunstwerk - Light mode artistic palette */
-    --quantum-glow: 180 85% 45%;
-    --quantum-glow-soft: 180 70% 50%;
-    --quantum-purple: 280 75% 55%;
-    --quantum-pink: 320 90% 50%;
-    --quantum-gold: 45 95% 55%;
-    --vinyl-surface: 220 10% 88%;
-    --vinyl-label: 220 15% 75%;
-    
-    /* Artistic gradients for unified aesthetic */
-    --gradient-quantum: linear-gradient(135deg, hsl(180 85% 45% / 0.2), hsl(280 75% 55% / 0.15), hsl(320 90% 50% / 0.1));
-    --gradient-visualizer: linear-gradient(180deg, hsl(180 85% 45%), hsl(280 75% 55%), hsl(320 90% 50%));
-    --gradient-atmospheric: radial-gradient(ellipse at top, hsl(180 85% 45% / 0.08), transparent 50%),
-                            radial-gradient(ellipse at bottom, hsl(280 75% 55% / 0.08), transparent 50%);
-    --gradient-vinyl: conic-gradient(from 0deg at 50% 50%, 
-                      hsl(220 10% 88%), hsl(220 10% 75%), hsl(220 10% 88%));
-    
-    /* Expressive shadows for depth & unity */
-    --glow-shadow: 0 0 20px hsl(180 85% 45% / 0.3), 0 0 40px hsl(180 85% 45% / 0.15);
-    --glow-shadow-strong: 0 0 30px hsl(180 85% 45% / 0.5), 0 0 60px hsl(180 85% 45% / 0.25);
-    --glow-shadow-purple: 0 0 25px hsl(280 75% 55% / 0.4), 0 0 50px hsl(280 75% 55% / 0.2);
-    --glow-shadow-pink: 0 0 25px hsl(320 90% 50% / 0.4), 0 0 50px hsl(320 90% 50% / 0.2);
-    --glow-shadow-gold: 0 0 25px hsl(45 95% 55% / 0.4), 0 0 50px hsl(45 95% 55% / 0.2);
-    --shadow-artistic: 0 4px 20px hsl(220 30% 10% / 0.1), 0 1px 4px hsl(220 30% 10% / 0.06);
+    /* Gesamtkunstwerk palette */
+    --quantum-glow: 168 80% 50%;
+    --quantum-glow-soft: 168 60% 55%;
+    --quantum-purple: 270 60% 58%;
+    --quantum-pink: 330 85% 55%;
+    --quantum-gold: 42 95% 58%;
+    --quantum-deep: 240 40% 20%;
+    --vinyl-surface: 240 8% 86%;
+    --vinyl-label: 240 10% 72%;
+
+    /* Expressive gradients */
+    --gradient-quantum: linear-gradient(135deg, hsl(168 80% 50% / 0.12), hsl(270 60% 58% / 0.08), hsl(330 85% 55% / 0.06));
+    --gradient-visualizer: linear-gradient(180deg, hsl(168 80% 50%), hsl(270 60% 58%), hsl(330 85% 55%));
+    --gradient-atmospheric: 
+      radial-gradient(ellipse 80% 50% at 20% 0%, hsl(168 80% 50% / 0.06), transparent),
+      radial-gradient(ellipse 60% 40% at 80% 100%, hsl(270 60% 58% / 0.05), transparent),
+      radial-gradient(ellipse 50% 50% at 50% 50%, hsl(330 85% 55% / 0.03), transparent);
+    --gradient-vinyl: conic-gradient(from 0deg at 50% 50%, hsl(240 8% 86%), hsl(240 8% 78%), hsl(240 8% 86%));
+    --gradient-hero: linear-gradient(160deg, hsl(168 80% 50% / 0.15), hsl(270 60% 58% / 0.1), hsl(330 85% 55% / 0.08));
+
+    /* Shadows */
+    --glow-shadow: 0 0 20px hsl(168 80% 50% / 0.25), 0 0 40px hsl(168 80% 50% / 0.1);
+    --glow-shadow-strong: 0 0 30px hsl(168 80% 50% / 0.4), 0 0 60px hsl(168 80% 50% / 0.2);
+    --glow-shadow-purple: 0 0 25px hsl(270 60% 58% / 0.3), 0 0 50px hsl(270 60% 58% / 0.15);
+    --glow-shadow-pink: 0 0 25px hsl(330 85% 55% / 0.3), 0 0 50px hsl(330 85% 55% / 0.15);
+    --glow-shadow-gold: 0 0 25px hsl(42 95% 58% / 0.3), 0 0 50px hsl(42 95% 58% / 0.15);
+    --shadow-artistic: 0 4px 24px hsl(240 20% 12% / 0.08), 0 1px 4px hsl(240 20% 12% / 0.04);
+    --shadow-elevated: 0 12px 40px hsl(240 20% 12% / 0.12), 0 4px 12px hsl(240 20% 12% / 0.06);
   }
 
   .dark {
-    --background: 220 30% 6%;
-    --foreground: 180 100% 95%;
+    --background: 240 20% 5%;
+    --foreground: 168 40% 92%;
 
-    --card: 220 25% 10%;
-    --card-foreground: 180 100% 95%;
+    --card: 240 18% 9%;
+    --card-foreground: 168 40% 92%;
 
-    --popover: 220 28% 8%;
-    --popover-foreground: 180 100% 95%;
+    --popover: 240 20% 7%;
+    --popover-foreground: 168 40% 92%;
 
-    --primary: 180 100% 55%;
-    --primary-foreground: 220 30% 6%;
+    --primary: 168 90% 52%;
+    --primary-foreground: 240 20% 5%;
 
-    --secondary: 280 85% 65%;
-    --secondary-foreground: 220 30% 6%;
+    --secondary: 270 70% 65%;
+    --secondary-foreground: 240 20% 5%;
 
-    --muted: 220 25% 15%;
-    --muted-foreground: 180 20% 70%;
+    --muted: 240 18% 14%;
+    --muted-foreground: 168 15% 62%;
 
-    --accent: 320 100% 60%;
-    --accent-foreground: 220 30% 6%;
+    --accent: 330 90% 62%;
+    --accent-foreground: 240 20% 5%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 180 100% 98%;
+    --destructive-foreground: 168 40% 95%;
 
-    --border: 220 25% 18%;
-    --input: 220 25% 12%;
-    --ring: 180 100% 55%;
+    --border: 240 18% 16%;
+    --input: 240 18% 11%;
+    --ring: 168 90% 52%;
 
-    /* Gesamtkunstwerk - Dark mode artistic palette */
-    --quantum-glow: 180 100% 55%;
-    --quantum-glow-soft: 180 80% 45%;
-    --quantum-purple: 280 85% 65%;
-    --quantum-pink: 320 100% 60%;
-    --quantum-gold: 45 100% 65%;
-    --vinyl-surface: 220 20% 14%;
-    --vinyl-label: 220 25% 22%;
-    
+    /* Dark Gesamtkunstwerk palette */
+    --quantum-glow: 168 90% 52%;
+    --quantum-glow-soft: 168 70% 42%;
+    --quantum-purple: 270 70% 65%;
+    --quantum-pink: 330 90% 62%;
+    --quantum-gold: 42 100% 62%;
+    --quantum-deep: 240 30% 8%;
+    --vinyl-surface: 240 15% 12%;
+    --vinyl-label: 240 18% 20%;
+
     /* Immersive dark gradients */
-    --gradient-quantum: linear-gradient(135deg, hsl(180 100% 55% / 0.3), hsl(280 85% 65% / 0.2), hsl(320 100% 60% / 0.15));
-    --gradient-visualizer: linear-gradient(180deg, hsl(180 100% 55%), hsl(280 85% 65%), hsl(320 100% 60%));
-    --gradient-atmospheric: radial-gradient(ellipse at top, hsl(180 100% 55% / 0.12), transparent 60%),
-                            radial-gradient(ellipse at bottom, hsl(280 85% 65% / 0.12), transparent 60%);
-    --gradient-vinyl: conic-gradient(from 0deg at 50% 50%, 
-                      hsl(220 20% 14%), hsl(220 20% 10%), hsl(220 20% 14%));
-    
-    /* Dramatic shadows for immersion */
-    --glow-shadow: 0 0 25px hsl(180 100% 55% / 0.4), 0 0 50px hsl(180 100% 55% / 0.2);
-    --glow-shadow-strong: 0 0 35px hsl(180 100% 55% / 0.6), 0 0 70px hsl(180 100% 55% / 0.3);
-    --glow-shadow-purple: 0 0 30px hsl(280 85% 65% / 0.5), 0 0 60px hsl(280 85% 65% / 0.25);
-    --glow-shadow-pink: 0 0 30px hsl(320 100% 60% / 0.5), 0 0 60px hsl(320 100% 60% / 0.25);
-    --glow-shadow-gold: 0 0 30px hsl(45 100% 65% / 0.5), 0 0 60px hsl(45 100% 65% / 0.25);
-    --shadow-artistic: 0 8px 32px hsl(220 30% 6% / 0.4), 0 2px 8px hsl(220 30% 6% / 0.3);
+    --gradient-quantum: linear-gradient(135deg, hsl(168 90% 52% / 0.2), hsl(270 70% 65% / 0.12), hsl(330 90% 62% / 0.08));
+    --gradient-visualizer: linear-gradient(180deg, hsl(168 90% 52%), hsl(270 70% 65%), hsl(330 90% 62%));
+    --gradient-atmospheric: 
+      radial-gradient(ellipse 80% 50% at 20% 0%, hsl(168 90% 52% / 0.08), transparent),
+      radial-gradient(ellipse 60% 40% at 80% 100%, hsl(270 70% 65% / 0.06), transparent),
+      radial-gradient(ellipse 50% 50% at 50% 50%, hsl(330 90% 62% / 0.04), transparent);
+    --gradient-vinyl: conic-gradient(from 0deg at 50% 50%, hsl(240 15% 12%), hsl(240 15% 8%), hsl(240 15% 12%));
+    --gradient-hero: linear-gradient(160deg, hsl(168 90% 52% / 0.2), hsl(270 70% 65% / 0.12), hsl(330 90% 62% / 0.08));
+
+    /* Dramatic shadows */
+    --glow-shadow: 0 0 25px hsl(168 90% 52% / 0.35), 0 0 50px hsl(168 90% 52% / 0.15);
+    --glow-shadow-strong: 0 0 35px hsl(168 90% 52% / 0.5), 0 0 70px hsl(168 90% 52% / 0.25);
+    --glow-shadow-purple: 0 0 30px hsl(270 70% 65% / 0.4), 0 0 60px hsl(270 70% 65% / 0.2);
+    --glow-shadow-pink: 0 0 30px hsl(330 90% 62% / 0.4), 0 0 60px hsl(330 90% 62% / 0.2);
+    --glow-shadow-gold: 0 0 30px hsl(42 100% 62% / 0.4), 0 0 60px hsl(42 100% 62% / 0.2);
+    --shadow-artistic: 0 8px 32px hsl(240 20% 5% / 0.4), 0 2px 8px hsl(240 20% 5% / 0.3);
+    --shadow-elevated: 0 16px 48px hsl(240 20% 5% / 0.5), 0 6px 16px hsl(240 20% 5% / 0.3);
   }
 }
 
@@ -126,10 +132,12 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
-    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    @apply bg-background text-foreground;
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background-image: var(--gradient-atmospheric);
     background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   code, pre, .font-mono {
@@ -137,10 +145,12 @@ All colors MUST be HSL.
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
+    font-family: 'Outfit', sans-serif;
+    @apply font-bold tracking-tight;
   }
 
-  /* Gesamtkunstwerk utility classes */
+  /* === Gesamtkunstwerk Utility Classes === */
+
   .artistic-glow {
     filter: drop-shadow(var(--glow-shadow));
   }
@@ -150,10 +160,96 @@ All colors MUST be HSL.
   }
 
   .atmospheric-blur {
-    backdrop-filter: blur(12px) saturate(150%);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
   }
 
   .unified-transition {
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .glass-panel {
+    @apply atmospheric-blur border border-border/40;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--card) / 0.7),
+      hsl(var(--card) / 0.4)
+    );
+  }
+
+  .glass-panel-strong {
+    @apply atmospheric-blur border border-border/50;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--card) / 0.85),
+      hsl(var(--card) / 0.6)
+    );
+  }
+
+  .text-gradient-brand {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(
+      135deg,
+      hsl(var(--quantum-glow)),
+      hsl(var(--quantum-purple)),
+      hsl(var(--quantum-pink))
+    );
+  }
+
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(
+      135deg,
+      hsl(var(--quantum-gold)),
+      hsl(var(--quantum-pink))
+    );
+  }
+
+  /* Animated gradient border */
+  .border-gradient {
+    position: relative;
+  }
+  .border-gradient::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--quantum-glow) / 0.5),
+      hsl(var(--quantum-purple) / 0.3),
+      hsl(var(--quantum-pink) / 0.2)
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Noise texture overlay */
+  .noise-overlay::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    opacity: 0.015;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 50;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
   }
 }
