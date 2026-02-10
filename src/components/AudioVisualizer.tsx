@@ -12,9 +12,7 @@ export const AudioVisualizer = ({ isPlaying, audioContext, analyser }: AudioVisu
 
   useEffect(() => {
     if (!isPlaying || !audioContext || !analyser || !canvasRef.current) {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
       return;
     }
 
@@ -27,53 +25,69 @@ export const AudioVisualizer = ({ isPlaying, audioContext, analyser }: AudioVisu
 
     const draw = () => {
       animationRef.current = requestAnimationFrame(draw);
-
       analyser.getByteFrequencyData(dataArray);
 
-      ctx.fillStyle = "hsl(220, 25%, 8%)";
+      // Clear with subtle fade
+      ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      const barWidth = (canvas.width / bufferLength) * 2.5;
-      let x = 0;
+      const barCount = 64;
+      const gap = 3;
+      const barWidth = (canvas.width - (barCount - 1) * gap) / barCount;
+      const step = Math.floor(bufferLength / barCount);
 
-      for (let i = 0; i < bufferLength; i++) {
-        const barHeight = (dataArray[i] / 255) * canvas.height;
+      for (let i = 0; i < barCount; i++) {
+        const value = dataArray[i * step];
+        const barHeight = (value / 255) * canvas.height * 0.9;
+        const x = i * (barWidth + gap);
+        const y = canvas.height - barHeight;
 
-        // Create gradient for bars
-        const gradient = ctx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
-        gradient.addColorStop(0, "hsl(180, 100%, 50%)");
-        gradient.addColorStop(0.5, "hsl(180, 80%, 40%)");
-        gradient.addColorStop(1, "hsl(200, 80%, 35%)");
+        // Color based on frequency position
+        const hue = 168 + (i / barCount) * 162; // teal → purple → pink
+        const lightness = 50 + (value / 255) * 15;
+
+        const gradient = ctx.createLinearGradient(x, y, x, canvas.height);
+        gradient.addColorStop(0, `hsla(${hue}, 85%, ${lightness}%, 0.9)`);
+        gradient.addColorStop(1, `hsla(${hue}, 85%, ${lightness * 0.6}%, 0.3)`);
 
         ctx.fillStyle = gradient;
-        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
 
-        // Add glow effect
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = "hsl(180, 100%, 50%)";
-        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-        ctx.shadowBlur = 0;
+        // Rounded top bars
+        const radius = Math.min(barWidth / 2, 4);
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + barWidth - radius, y);
+        ctx.quadraticCurveTo(x + barWidth, y, x + barWidth, y + radius);
+        ctx.lineTo(x + barWidth, canvas.height);
+        ctx.lineTo(x, canvas.height);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.fill();
 
-        x += barWidth + 1;
+        // Top glow
+        if (value > 180) {
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = `hsl(${hue}, 90%, 60%)`;
+          ctx.fillRect(x, y, barWidth, 2);
+          ctx.shadowBlur = 0;
+        }
       }
     };
 
     draw();
 
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
   }, [isPlaying, audioContext, analyser]);
 
   return (
-    <div className="w-full h-32 border border-primary/30 rounded-lg overflow-hidden bg-card">
+    <div className="w-full">
       <canvas
         ref={canvasRef}
         width={800}
-        height={128}
-        className="w-full h-full"
+        height={140}
+        className="w-full h-32 sm:h-36"
       />
     </div>
   );

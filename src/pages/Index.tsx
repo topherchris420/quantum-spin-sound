@@ -8,7 +8,8 @@ import { Controls } from "@/components/Controls";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 import { evaluate } from "@strudel/transpiler";
-import { Music } from "lucide-react";
+import { Music, Disc3, Waves } from "lucide-react";
+import { motion } from "framer-motion";
 
 const DEFAULT_CODE = `stack(
   // Section 1: Vers3Dynamics — Living Resonant Field (ascending arpeggio for energy transfer)
@@ -51,41 +52,27 @@ const Index = () => {
   const easterEggAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // Initialize audio context immediately
     const initAudio = () => {
       try {
         const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
         const ctx = new AudioContext();
-        
         setAudioContext(ctx);
-        
-        // Create analyser
         const analyserNode = ctx.createAnalyser();
         analyserNode.fftSize = 2048;
         analyserNode.connect(ctx.destination);
         setAnalyser(analyserNode);
-        
-        // Create scratch filter
         const filter = ctx.createBiquadFilter();
         filter.type = "lowpass";
         filter.frequency.value = 2000;
         scratchFilterRef.current = filter;
-        
         setAudioInitialized(true);
-        console.log("Audio context created successfully, state:", ctx.state);
       } catch (error) {
         console.error("Audio initialization failed:", error);
         toast.error("Failed to initialize audio: " + (error as Error).message);
       }
     };
-
     initAudio();
-
-    return () => {
-      if (strudelRef.current) {
-        strudelRef.current = null;
-      }
-    };
+    return () => { strudelRef.current = null; };
   }, []);
 
   const evaluateCode = useCallback(async () => {
@@ -93,43 +80,32 @@ const Index = () => {
       toast.error("Audio not initialized yet. Please refresh the page.");
       return;
     }
-    
     try {
       const now = audioContext.currentTime;
       const oscillators: OscillatorNode[] = [];
       const gains: GainNode[] = [];
-      
-      // Main mixer
       const mainGain = audioContext.createGain();
       mainGain.gain.setValueAtTime(0.15, now);
-      
-      // Bass line - sawtooth
       const bass = audioContext.createOscillator();
       const bassGain = audioContext.createGain();
       bass.type = 'sawtooth';
-      bass.frequency.setValueAtTime(65.41, now); // C2
+      bass.frequency.setValueAtTime(65.41, now);
       bassGain.gain.setValueAtTime(0.3, now);
       bass.connect(bassGain);
       bassGain.connect(mainGain);
-      
-      // Modulate bass frequency
       const lfo1 = audioContext.createOscillator();
       const lfo1Gain = audioContext.createGain();
       lfo1.frequency.setValueAtTime(0.25, now);
       lfo1Gain.gain.setValueAtTime(10, now);
       lfo1.connect(lfo1Gain);
       lfo1Gain.connect(bass.frequency);
-      
-      // Melody - triangle wave
       const melody = audioContext.createOscillator();
       const melodyGain = audioContext.createGain();
       melody.type = 'triangle';
       melodyGain.gain.setValueAtTime(0.2, now);
       melody.connect(melodyGain);
       melodyGain.connect(mainGain);
-      
-      // Arpeggio pattern
-      const notes = [261.63, 293.66, 329.63, 392.00, 523.25]; // C4, D4, E4, G4, C5
+      const notes = [261.63, 293.66, 329.63, 392.00, 523.25];
       let noteIndex = 0;
       const arpInterval = setInterval(() => {
         if (melody.frequency) {
@@ -137,23 +113,18 @@ const Index = () => {
           noteIndex = (noteIndex + 1) % notes.length;
         }
       }, 250);
-      
-      // Pad - sine waves
       const pad1 = audioContext.createOscillator();
       const pad2 = audioContext.createOscillator();
       const padGain = audioContext.createGain();
       pad1.type = 'sine';
       pad2.type = 'sine';
-      pad1.frequency.setValueAtTime(523.25, now); // C5
-      pad2.frequency.setValueAtTime(659.25, now); // E5
+      pad1.frequency.setValueAtTime(523.25, now);
+      pad2.frequency.setValueAtTime(659.25, now);
       padGain.gain.setValueAtTime(0.1, now);
-      
-      // Add reverb-like delay
       const delay = audioContext.createDelay();
       delay.delayTime.setValueAtTime(0.3, now);
       const delayFeedback = audioContext.createGain();
       delayFeedback.gain.setValueAtTime(0.4, now);
-      
       pad1.connect(padGain);
       pad2.connect(padGain);
       padGain.connect(delay);
@@ -161,33 +132,25 @@ const Index = () => {
       delayFeedback.connect(delay);
       delay.connect(mainGain);
       padGain.connect(mainGain);
-      
-      // High frequency shimmer - FM synthesis
       const carrier = audioContext.createOscillator();
       const modulator = audioContext.createOscillator();
       const modGain = audioContext.createGain();
       const carrierGain = audioContext.createGain();
-      
       carrier.type = 'sine';
       modulator.type = 'sine';
-      carrier.frequency.setValueAtTime(1046.5, now); // C6
+      carrier.frequency.setValueAtTime(1046.5, now);
       modulator.frequency.setValueAtTime(5, now);
       modGain.gain.setValueAtTime(200, now);
       carrierGain.gain.setValueAtTime(0.08, now);
-      
       modulator.connect(modGain);
       modGain.connect(carrier.frequency);
       carrier.connect(carrierGain);
       carrierGain.connect(mainGain);
-      
-      // Connect to analyser
       if (analyser) {
         mainGain.connect(analyser);
       } else {
         mainGain.connect(audioContext.destination);
       }
-      
-      // Start all oscillators
       const startTime = now + 0.1;
       bass.start(startTime);
       lfo1.start(startTime);
@@ -196,17 +159,9 @@ const Index = () => {
       pad2.start(startTime);
       carrier.start(startTime);
       modulator.start(startTime);
-      
       oscillators.push(bass, lfo1, melody, pad1, pad2, carrier, modulator);
       gains.push(bassGain, melodyGain, padGain, carrierGain, mainGain);
-      
-      strudelRef.current = { 
-        oscillators, 
-        gains, 
-        arpInterval,
-        mainGain 
-      };
-      
+      strudelRef.current = { oscillators, gains, arpInterval, mainGain };
       toast.success("Quantum resonance field activated!");
     } catch (error) {
       console.error("Audio error:", error);
@@ -216,42 +171,27 @@ const Index = () => {
 
   const handlePlayPause = async () => {
     if (!isPlaying) {
-      // Ensure audio context exists and is running
       if (!audioContext) {
         toast.error("Audio system not ready. Please refresh the page.");
         return;
       }
-      
-      // Resume audio context if suspended (required by browser autoplay policy)
       if (audioContext.state === 'suspended') {
         try {
           await audioContext.resume();
-          console.log("Audio context resumed, state:", audioContext.state);
         } catch (error) {
           console.error("Failed to resume audio context:", error);
           toast.error("Failed to start audio");
           return;
         }
       }
-      
       await evaluateCode();
       setIsPlaying(true);
     } else {
       if (strudelRef.current) {
-        // Stop all oscillators
         strudelRef.current.oscillators?.forEach((osc: OscillatorNode) => {
-          try {
-            osc.stop();
-          } catch (e) {
-            // Oscillator might already be stopped
-          }
+          try { osc.stop(); } catch (e) {}
         });
-        
-        // Clear arpeggio interval
-        if (strudelRef.current.arpInterval) {
-          clearInterval(strudelRef.current.arpInterval);
-        }
-        
+        if (strudelRef.current.arpInterval) clearInterval(strudelRef.current.arpInterval);
         strudelRef.current = null;
       }
       setIsPlaying(false);
@@ -260,14 +200,10 @@ const Index = () => {
 
   const handleScratch = useCallback((scratchSpeed: number) => {
     if (!audioContext || !strudelRef.current?.mainGain) return;
-    
     const now = audioContext.currentTime;
     const scratchIntensity = Math.abs(scratchSpeed) * 0.05;
-    
-    // Modulate volume for scratch effect
     const currentGain = strudelRef.current.mainGain.gain.value;
     const targetGain = Math.max(0.05, Math.min(0.3, currentGain + scratchIntensity));
-    
     strudelRef.current.mainGain.gain.cancelScheduledValues(now);
     strudelRef.current.mainGain.gain.setValueAtTime(targetGain, now);
     strudelRef.current.mainGain.gain.linearRampToValueAtTime(0.15, now + 0.1);
@@ -279,15 +215,9 @@ const Index = () => {
     } else if (!isOnRecord && isPlaying) {
       if (strudelRef.current) {
         strudelRef.current.oscillators?.forEach((osc: OscillatorNode) => {
-          try {
-            osc.stop();
-          } catch (e) {
-            // Already stopped
-          }
+          try { osc.stop(); } catch (e) {}
         });
-        if (strudelRef.current.arpInterval) {
-          clearInterval(strudelRef.current.arpInterval);
-        }
+        if (strudelRef.current.arpInterval) clearInterval(strudelRef.current.arpInterval);
         strudelRef.current = null;
       }
       setIsPlaying(false);
@@ -301,34 +231,21 @@ const Index = () => {
 
   const handleEasterEgg = () => {
     setEasterEggCount(prev => prev + 1);
-    
     if (easterEggCount + 1 === 3) {
-      // Stop current audio
       if (strudelRef.current) {
         strudelRef.current.oscillators?.forEach((osc: OscillatorNode) => {
-          try {
-            osc.stop();
-          } catch (e) {
-            // Already stopped
-          }
+          try { osc.stop(); } catch (e) {}
         });
-        if (strudelRef.current.arpInterval) {
-          clearInterval(strudelRef.current.arpInterval);
-        }
+        if (strudelRef.current.arpInterval) clearInterval(strudelRef.current.arpInterval);
         strudelRef.current = null;
       }
       setIsPlaying(false);
-      
-      // Play easter egg audio
       if (!easterEggAudioRef.current) {
         easterEggAudioRef.current = new Audio('/easter-egg.mp3');
         easterEggAudioRef.current.volume = 0.7;
       }
-      
       easterEggAudioRef.current.play();
-      toast.success("🎵 Easter egg unlocked! Wrong Number Song - Slowed & Reverb", {
-        duration: 5000,
-      });
+      toast.success("🎵 Easter egg unlocked! Wrong Number Song - Slowed & Reverb", { duration: 5000 });
       setEasterEggCount(0);
     } else {
       toast(`Click ${3 - (easterEggCount + 1)} more times...`, { duration: 1000 });
@@ -336,73 +253,101 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Atmospheric background layer */}
-      <div className="fixed inset-0 pointer-events-none opacity-60">
+    <div className="min-h-screen relative overflow-hidden noise-overlay">
+      {/* Atmospheric background */}
+      <div className="fixed inset-0 pointer-events-none opacity-50">
         <QuantumField isPlaying={isPlaying} analyser={analyser} />
       </div>
 
-      {/* Main artistic container */}
+      {/* Ambient orbs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-1/4 -left-1/4 w-[60vw] h-[60vw] rounded-full opacity-[0.04] animate-breathe"
+          style={{ background: 'radial-gradient(circle, hsl(var(--quantum-glow)), transparent 70%)' }} />
+        <div className="absolute -bottom-1/4 -right-1/4 w-[50vw] h-[50vw] rounded-full opacity-[0.03] animate-breathe"
+          style={{ background: 'radial-gradient(circle, hsl(var(--quantum-purple)), transparent 70%)', animationDelay: '2s' }} />
+      </div>
+
       <div className="relative z-10">
-        {/* Header - Unified artistic title */}
-        <header className="p-3 sm:p-4 md:p-6">
+        {/* Header */}
+        <motion.header
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="px-4 sm:px-6 lg:px-8 pt-6 pb-2"
+        >
           <div className="flex items-center justify-between max-w-7xl mx-auto">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Music className="w-5 h-5 sm:w-6 sm:h-6 text-quantum-glow artistic-glow" />
-            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight">
-              <span className="bg-gradient-to-r from-quantum-glow via-quantum-purple to-quantum-pink bg-clip-text text-transparent">
-                Vers3Dynamics Studio
-              </span>
-            </h1>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Disc3 className={`w-7 h-7 sm:w-8 sm:h-8 text-quantum-glow ${isPlaying ? 'animate-spin-vinyl' : ''}`} />
+                <div className="absolute inset-0 blur-md opacity-40">
+                  <Disc3 className="w-7 h-7 sm:w-8 sm:h-8 text-quantum-glow" />
+                </div>
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tighter text-gradient-brand">
+                  Vers3Dynamics
+                </h1>
+                <p className="text-[10px] sm:text-xs font-medium tracking-[0.3em] uppercase text-muted-foreground/60 -mt-0.5">
+                  Studio
+                </p>
+              </div>
             </div>
             <ThemeToggle />
           </div>
-        </header>
+        </motion.header>
 
-        {/* Main artistic workspace */}
-        <main className="px-2 sm:px-4 md:px-6 pb-4 space-y-3 sm:space-y-4 md:space-y-5 max-w-7xl mx-auto">
-          
-          {/* Central focal point - Vinyl player with immersive frame */}
-          <section 
-            className="relative rounded-3xl overflow-hidden atmospheric-blur border border-border/50 shadow-[var(--shadow-artistic)]"
-            style={{ background: 'linear-gradient(135deg, hsl(var(--card) / 0.8), hsl(var(--card) / 0.6))' }}
+        {/* Main workspace */}
+        <main className="px-4 sm:px-6 lg:px-8 pb-8 max-w-7xl mx-auto">
+
+          {/* Hero: Vinyl Player */}
+          <motion.section
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-4 mb-6 sm:mb-8"
           >
-            <div className="absolute inset-0 opacity-30 pointer-events-none" 
-                 style={{ background: 'var(--gradient-quantum)' }} />
-            
-            <div className="relative p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center">
-              <div onClick={handleEasterEgg}>
-                <VinylPlayer
-                  isPlaying={isPlaying}
-                  onScratch={handleScratch}
-                  onNeedleChange={handleNeedleChange}
-                />
+            <div className="relative rounded-[2rem] overflow-hidden glass-panel-strong shadow-[var(--shadow-elevated)] border-gradient">
+              <div className="absolute inset-0 opacity-20 pointer-events-none"
+                style={{ background: 'var(--gradient-hero)' }} />
+              
+              <div className="relative p-6 sm:p-8 md:p-10 flex flex-col items-center">
+                <div onClick={handleEasterEgg} className="cursor-pointer">
+                  <VinylPlayer
+                    isPlaying={isPlaying}
+                    onScratch={handleScratch}
+                    onNeedleChange={handleNeedleChange}
+                  />
+                </div>
+
+                {/* Integrated controls below vinyl */}
+                <div className="w-full max-w-md mt-6">
+                  <Controls
+                    isPlaying={isPlaying}
+                    onPlayPause={handlePlayPause}
+                    onReset={handleReset}
+                  />
+                </div>
               </div>
             </div>
-          </section>
+          </motion.section>
 
-          {/* Unified control & visualization symphony */}
-          <section className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-5">
-            
-            {/* Left panel - Controls & Audio visualization */}
-            <div className="space-y-3 sm:space-y-4">
-              {/* Controls with artistic framing */}
-              <div 
-                className="rounded-2xl atmospheric-blur border border-border/50 p-3 sm:p-4 shadow-[var(--shadow-artistic)] unified-transition hover:shadow-[var(--glow-shadow)]"
-                style={{ background: 'linear-gradient(135deg, hsl(var(--card) / 0.7), hsl(var(--card) / 0.5))' }}
-              >
-                <Controls
-                  isPlaying={isPlaying}
-                  onPlayPause={handlePlayPause}
-                  onReset={handleReset}
-                />
-              </div>
-
-              {/* Audio visualizer - immersive frequency display */}
-              <div 
-                className="rounded-2xl overflow-hidden border border-quantum-glow/30 artistic-glow"
-                style={{ background: 'linear-gradient(180deg, hsl(var(--card) / 0.5), hsl(var(--card) / 0.3))' }}
-              >
+          {/* Visualizers + Code Editor */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5"
+          >
+            {/* Left: Visualizers */}
+            <div className="lg:col-span-5 space-y-4">
+              {/* Frequency bars */}
+              <div className="rounded-2xl overflow-hidden glass-panel shadow-[var(--shadow-artistic)] unified-transition hover:shadow-[var(--glow-shadow)]">
+                <div className="px-4 py-2.5 border-b border-border/30 flex items-center gap-2">
+                  <Waves className="w-3.5 h-3.5 text-quantum-glow" />
+                  <span className="text-xs font-mono font-semibold tracking-widest text-gradient-brand">
+                    FREQUENCY
+                  </span>
+                </div>
                 <AudioVisualizer
                   isPlaying={isPlaying}
                   audioContext={audioContext}
@@ -410,11 +355,8 @@ const Index = () => {
                 />
               </div>
 
-              {/* Enhanced visualizer - artistic expression */}
-              <div 
-                className="rounded-2xl overflow-hidden border border-quantum-purple/30"
-                style={{ background: 'linear-gradient(135deg, hsl(var(--card) / 0.4), hsl(var(--card) / 0.2))' }}
-              >
+              {/* Waveform + Spectrogram */}
+              <div className="rounded-2xl overflow-hidden glass-panel shadow-[var(--shadow-artistic)] unified-transition hover:shadow-[var(--glow-shadow-purple)]">
                 <EnhancedVisualizer
                   isPlaying={isPlaying}
                   audioContext={audioContext}
@@ -423,37 +365,42 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Right panel - Code editor as creative instrument */}
-            <div 
-              className="rounded-2xl atmospheric-blur border border-border/50 overflow-hidden shadow-[var(--shadow-artistic)] unified-transition hover:shadow-[var(--glow-shadow-purple)]"
-              style={{ background: 'linear-gradient(135deg, hsl(var(--card) / 0.8), hsl(var(--card) / 0.6))' }}
-            >
-              <div className="p-3 sm:p-4 border-b border-border/50">
-                <h2 className="text-base sm:text-lg font-semibold bg-gradient-to-r from-quantum-purple to-quantum-pink bg-clip-text text-transparent">
-                  Sonic Code Canvas
-                </h2>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  Compose your quantum symphony
-                </p>
-              </div>
-              
-              <div className="p-2 sm:p-3">
-                <CodeEditor
-                  value={code}
-                  onChange={setCode}
-                />
+            {/* Right: Code editor */}
+            <div className="lg:col-span-7">
+              <div className="rounded-2xl overflow-hidden glass-panel-strong shadow-[var(--shadow-elevated)] unified-transition hover:shadow-[var(--glow-shadow-purple)] h-full flex flex-col">
+                <div className="px-4 py-3 border-b border-border/30 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-base sm:text-lg font-bold text-gradient-brand">
+                      Sonic Code Canvas
+                    </h2>
+                    <p className="text-[11px] sm:text-xs text-muted-foreground/60 mt-0.5 tracking-wide">
+                      Compose your quantum symphony
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-quantum-pink/60" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-quantum-gold/60" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-quantum-glow/60" />
+                  </div>
+                </div>
+                <div className="p-2 sm:p-3 flex-1 min-h-[300px] lg:min-h-0">
+                  <CodeEditor value={code} onChange={setCode} />
+                </div>
               </div>
             </div>
-          </section>
+          </motion.section>
 
-          {/* Footer - Artistic signature */}
-          <footer className="text-center py-4 sm:py-6">
-            <p className="text-xs sm:text-sm text-muted-foreground/70 tracking-wide">
-              <span className="bg-gradient-to-r from-quantum-glow via-quantum-purple to-quantum-pink bg-clip-text text-transparent font-medium">
+          {/* Footer */}
+          <footer className="text-center py-8 mt-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel">
+              <span className="text-xs font-bold tracking-[0.2em] uppercase text-gradient-brand">
                 Gesamtkunstwerk
               </span>
-              {" "}- A unified artistic experience
-            </p>
+              <span className="text-xs text-muted-foreground/50">—</span>
+              <span className="text-xs text-muted-foreground/50 tracking-wide">
+                A unified artistic experience
+              </span>
+            </div>
           </footer>
         </main>
       </div>

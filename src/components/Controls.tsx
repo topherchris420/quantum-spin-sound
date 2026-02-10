@@ -9,20 +9,20 @@ interface ControlsProps {
 
 export const Controls = ({ isPlaying, onPlayPause, onReset }: ControlsProps) => {
   return (
-    <div className="flex gap-4 items-center justify-center">
+    <div className="flex gap-3 items-center justify-center">
       <Button
         onClick={onPlayPause}
         size="lg"
-        className="bg-primary hover:bg-primary/80 text-primary-foreground shadow-[0_0_20px_hsl(var(--primary)/0.3)] hover:shadow-[0_0_30px_hsl(var(--primary)/0.5)] transition-all"
+        className="relative bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-8 py-3 text-sm font-semibold tracking-wide shadow-[var(--glow-shadow)] hover:shadow-[var(--glow-shadow-strong)] unified-transition"
       >
         {isPlaying ? (
           <>
-            <Pause className="mr-2 h-5 w-5" />
+            <Pause className="mr-2 h-4 w-4" />
             Pause
           </>
         ) : (
           <>
-            <Play className="mr-2 h-5 w-5" />
+            <Play className="mr-2 h-4 w-4" />
             Play
           </>
         )}
@@ -32,10 +32,10 @@ export const Controls = ({ isPlaying, onPlayPause, onReset }: ControlsProps) => 
         onClick={onReset}
         variant="outline"
         size="lg"
-        className="border-primary/30 hover:bg-primary/10 hover:border-primary/50 transition-all"
+        className="rounded-full px-6 py-3 text-sm border-border/50 hover:bg-muted/50 hover:border-primary/30 unified-transition"
       >
-        <RotateCcw className="mr-2 h-4 w-4" />
-        Reset Code
+        <RotateCcw className="mr-2 h-3.5 w-3.5" />
+        Reset
       </Button>
     </div>
   );
