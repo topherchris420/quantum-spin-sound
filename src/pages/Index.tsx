@@ -3,7 +3,7 @@ import { VinylPlayer } from "@/components/VinylPlayer";
 import { CodeEditor } from "@/components/CodeEditor";
 import { AudioVisualizer } from "@/components/AudioVisualizer";
 import { EnhancedVisualizer } from "@/components/EnhancedVisualizer";
-import { QuantumField } from "@/components/QuantumField";
+import { ShaderAnimation } from "@/components/ui/shader-animation";
 import { Controls } from "@/components/Controls";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
@@ -255,8 +255,8 @@ const Index = () => {
   return (
     <div className="min-h-screen relative overflow-hidden noise-overlay">
       {/* Atmospheric background */}
-      <div className="fixed inset-0 pointer-events-none opacity-50">
-        <QuantumField isPlaying={isPlaying} analyser={analyser} />
+      <div className="fixed inset-0 pointer-events-none">
+        <ShaderAnimation />
       </div>
 
       {/* Ambient orbs */}
