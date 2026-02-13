@@ -256,7 +256,7 @@ const Index = () => {
     <div className="min-h-screen relative overflow-hidden noise-overlay">
       {/* Atmospheric background */}
       <div className="fixed inset-0 pointer-events-none">
-        <ShaderAnimation />
+        <ShaderAnimation analyser={analyser} />
       </div>
 
       {/* Ambient orbs */}
