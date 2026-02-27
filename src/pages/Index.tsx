@@ -8,7 +8,7 @@ import { Controls } from "@/components/Controls";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 import { evaluate } from "@strudel/transpiler";
-import { Music, Disc3, Waves } from "lucide-react";
+import { Music, Disc3, Waves, Maximize2, Minimize2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 const DEFAULT_CODE = `stack(
@@ -46,7 +46,8 @@ const Index = () => {
   const [audioInitialized, setAudioInitialized] = useState(false);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
-  const [easterEggCount, setEasterEggCount] = useState(0);
+const [easterEggCount, setEasterEggCount] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const strudelRef = useRef<any>(null);
   const scratchFilterRef = useRef<BiquadFilterNode | null>(null);
   const easterEggAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -254,9 +255,22 @@ const Index = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden noise-overlay">
-      {/* Atmospheric background */}
-      <div className="fixed inset-0 pointer-events-none">
+      {/* Shader background — fullscreen mode */}
+      <div className={`fixed inset-0 transition-all duration-500 ${isFullscreen ? 'z-50' : 'pointer-events-none z-0'}`}>
         <ShaderAnimation analyser={analyser} />
+        {isFullscreen && (
+          <div className="absolute inset-0 flex flex-col items-center justify-end pb-12 pointer-events-none">
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              onClick={() => setIsFullscreen(false)}
+              className="pointer-events-auto flex items-center gap-2 px-5 py-2.5 rounded-full glass-panel-strong text-sm font-semibold tracking-wide text-foreground/80 hover:text-foreground transition-colors shadow-lg"
+            >
+              <Minimize2 className="w-4 h-4" />
+              Exit Fullscreen
+            </motion.button>
+          </div>
+        )}
       </div>
 
       {/* Ambient orbs */}
@@ -292,7 +306,16 @@ const Index = () => {
                 </p>
               </div>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsFullscreen(true)}
+                className="p-2 rounded-xl glass-panel hover:shadow-[var(--glow-shadow)] transition-all"
+                title="Fullscreen shader"
+              >
+                <Maximize2 className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+              </button>
+              <ThemeToggle />
+            </div>
           </div>
         </motion.header>
 
