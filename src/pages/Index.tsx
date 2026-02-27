@@ -210,9 +210,23 @@ const [easterEggCount, setEasterEggCount] = useState(0);
     strudelRef.current.mainGain.gain.linearRampToValueAtTime(0.15, now + 0.1);
   }, [audioContext]);
 
-  const handleNeedleChange = useCallback((isOnRecord: boolean) => {
+  const handleNeedleChange = useCallback(async (isOnRecord: boolean) => {
     if (isOnRecord && !isPlaying) {
-      handlePlayPause();
+      if (!audioContext) {
+        toast.error("Audio system not ready. Please refresh the page.");
+        return;
+      }
+      if (audioContext.state === 'suspended') {
+        try {
+          await audioContext.resume();
+        } catch (error) {
+          console.error("Failed to resume audio context:", error);
+          toast.error("Failed to start audio");
+          return;
+        }
+      }
+      await evaluateCode();
+      setIsPlaying(true);
     } else if (!isOnRecord && isPlaying) {
       if (strudelRef.current) {
         strudelRef.current.oscillators?.forEach((osc: OscillatorNode) => {
@@ -223,7 +237,7 @@ const [easterEggCount, setEasterEggCount] = useState(0);
       }
       setIsPlaying(false);
     }
-  }, [isPlaying]);
+  }, [isPlaying, audioContext, evaluateCode]);
 
   const handleReset = () => {
     setCode(DEFAULT_CODE);
