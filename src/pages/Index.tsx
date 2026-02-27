@@ -5,6 +5,7 @@ import { AudioVisualizer } from "@/components/AudioVisualizer";
 import { EnhancedVisualizer } from "@/components/EnhancedVisualizer";
 import { ShaderAnimation } from "@/components/ui/shader-animation";
 import { Controls } from "@/components/Controls";
+import { EasterEggParticles } from "@/components/EasterEggParticles";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 import { evaluate } from "@strudel/transpiler";
@@ -328,6 +329,9 @@ const [easterEggCount, setEasterEggCount] = useState(0);
             style={{ background: 'radial-gradient(circle at 100% 100%, hsl(var(--accent)), transparent 70%)' }} />
         </motion.div>
       )}
+
+      {/* Easter egg particles */}
+      {easterEggActive && <EasterEggParticles />}
 
       {/* Ambient orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
