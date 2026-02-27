@@ -50,6 +50,7 @@ const Index = () => {
 const [easterEggCount, setEasterEggCount] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [easterEggActive, setEasterEggActive] = useState(false);
+  const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(null);
   const strudelRef = useRef<any>(null);
   const scratchFilterRef = useRef<BiquadFilterNode | null>(null);
   const easterEggAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -246,7 +247,7 @@ const [easterEggCount, setEasterEggCount] = useState(0);
     toast.success("Code reset to default");
   };
 
-  const handleEasterEgg = () => {
+  const handleEasterEgg = async () => {
     setEasterEggCount(prev => prev + 1);
     if (easterEggCount + 1 === 3) {
       if (strudelRef.current) {
@@ -261,9 +262,22 @@ const [easterEggCount, setEasterEggCount] = useState(0);
         easterEggAudioRef.current = new Audio('/easter-egg.mp3');
         easterEggAudioRef.current.volume = 0.7;
       }
+      // Route easter egg audio through an analyser for beat-sync
+      if (audioContext) {
+        if (audioContext.state === 'suspended') await audioContext.resume();
+        const source = audioContext.createMediaElementSource(easterEggAudioRef.current);
+        const eeAnalyser = audioContext.createAnalyser();
+        eeAnalyser.fftSize = 256;
+        source.connect(eeAnalyser);
+        eeAnalyser.connect(audioContext.destination);
+        setEasterEggAnalyser(eeAnalyser);
+      }
       easterEggAudioRef.current.play();
       setEasterEggActive(true);
-      easterEggAudioRef.current.onended = () => setEasterEggActive(false);
+      easterEggAudioRef.current.onended = () => {
+        setEasterEggActive(false);
+        setEasterEggAnalyser(null);
+      };
       toast.success("🎵 Cymatic Connection — Easter Egg Unlocked!", { duration: 5000 });
       setEasterEggCount(0);
     } else {
@@ -331,7 +345,7 @@ const [easterEggCount, setEasterEggCount] = useState(0);
       )}
 
       {/* Easter egg particles */}
-      {easterEggActive && <EasterEggParticles />}
+      {easterEggActive && <EasterEggParticles analyser={easterEggAnalyser} />}
 
       {/* Ambient orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
