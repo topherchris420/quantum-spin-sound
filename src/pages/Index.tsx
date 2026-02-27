@@ -48,6 +48,7 @@ const Index = () => {
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
 const [easterEggCount, setEasterEggCount] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [easterEggActive, setEasterEggActive] = useState(false);
   const strudelRef = useRef<any>(null);
   const scratchFilterRef = useRef<BiquadFilterNode | null>(null);
   const easterEggAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -260,7 +261,9 @@ const [easterEggCount, setEasterEggCount] = useState(0);
         easterEggAudioRef.current.volume = 0.7;
       }
       easterEggAudioRef.current.play();
-      toast.success("🎵 Easter egg unlocked! Wrong Number Song - Slowed & Reverb", { duration: 5000 });
+      setEasterEggActive(true);
+      easterEggAudioRef.current.onended = () => setEasterEggActive(false);
+      toast.success("🎵 Cymatic Connection — Easter Egg Unlocked!", { duration: 5000 });
       setEasterEggCount(0);
     } else {
       toast(`Click ${3 - (easterEggCount + 1)} more times...`, { duration: 1000 });
@@ -286,6 +289,45 @@ const [easterEggCount, setEasterEggCount] = useState(0);
           </div>
         )}
       </div>
+
+      {/* Easter egg visual effect overlay */}
+      {easterEggActive && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-40 pointer-events-none"
+        >
+          {/* Pulsing radial glow */}
+          <div className="absolute inset-0 animate-[pulse_1.5s_ease-in-out_infinite]"
+            style={{
+              background: 'radial-gradient(circle at 50% 50%, hsla(var(--primary), 0.25), hsla(var(--accent), 0.15), transparent 70%)',
+            }}
+          />
+          {/* Spinning ring */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div
+              className="w-[80vmin] h-[80vmin] rounded-full border-2 border-primary/30 animate-[spin_8s_linear_infinite]"
+              style={{
+                boxShadow: '0 0 60px 20px hsla(var(--primary), 0.2), inset 0 0 60px 20px hsla(var(--accent), 0.1)',
+              }}
+            />
+          </div>
+          {/* Secondary ring */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div
+              className="w-[50vmin] h-[50vmin] rounded-full border border-accent/20 animate-[spin_12s_linear_infinite_reverse]"
+              style={{
+                boxShadow: '0 0 40px 10px hsla(var(--accent), 0.15)',
+              }}
+            />
+          </div>
+          {/* Corner flares */}
+          <div className="absolute top-0 left-0 w-1/3 h-1/3 opacity-40 animate-[pulse_2s_ease-in-out_infinite]"
+            style={{ background: 'radial-gradient(circle at 0% 0%, hsl(var(--primary)), transparent 70%)' }} />
+          <div className="absolute bottom-0 right-0 w-1/3 h-1/3 opacity-40 animate-[pulse_2s_ease-in-out_infinite_0.5s]"
+            style={{ background: 'radial-gradient(circle at 100% 100%, hsl(var(--accent)), transparent 70%)' }} />
+        </motion.div>
+      )}
 
       {/* Ambient orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
