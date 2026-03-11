@@ -126,11 +126,16 @@ export const EasterEggParticles = ({ analyser }: EasterEggParticlesProps) => {
 
       const audio = audioRef.current;
 
-      // Spawn rate scales with energy
-      const spawnRate = Math.max(1, Math.floor(3 - audio.energy * 2));
+      // Spawn rate scales with energy, capped for performance
+      const spawnRate = Math.max(2, Math.floor(4 - audio.energy * 2));
       if (timeRef.current % spawnRate === 0) {
-        const count = 1 + Math.floor(audio.energy * 4);
+        const count = 1 + Math.floor(audio.energy * 2);
         for (let i = 0; i < count; i++) spawn(false);
+      }
+
+      // Cap total particles
+      if (particlesRef.current.length > 200) {
+        particlesRef.current.splice(0, particlesRef.current.length - 200);
       }
 
       const particles = particlesRef.current;
