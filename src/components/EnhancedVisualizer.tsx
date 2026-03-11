@@ -135,30 +135,28 @@ export const EnhancedVisualizer = ({ isPlaying, audioContext, analyser }: Enhanc
       const barWidth = spectrogramCanvas.width / maxHistoryLength;
       const barHeight = spectrogramCanvas.height / bufferLength;
 
+      // Only draw every 2nd frequency bin for performance
+      const freqStep = 2;
       for (let i = 0; i < spectrogramHistory.length; i++) {
         const snapshot = spectrogramHistory[i];
-        const fadeOpacity = i / spectrogramHistory.length; // Fade older entries
+        const fadeOpacity = i / spectrogramHistory.length;
         
-        for (let j = 0; j < snapshot.length; j++) {
+        for (let j = 0; j < snapshot.length; j += freqStep) {
           const value = snapshot[j];
           const intensity = value / 255;
           
-          if (intensity < 0.1) continue; // Skip very low values for performance
+          if (intensity < 0.12) continue;
           
-          // Multi-color quantum gradient based on frequency and intensity
           let hue, saturation, lightness;
           if (intensity < 0.3) {
-            // Low intensity - cyan to blue
             hue = 180 + (intensity * 100);
             saturation = 100;
             lightness = 30 + (intensity * 40);
           } else if (intensity < 0.6) {
-            // Medium intensity - purple
             hue = 280;
             saturation = 85;
             lightness = 35 + (intensity * 50);
           } else {
-            // High intensity - pink/magenta
             hue = 320;
             saturation = 100;
             lightness = 50 + (intensity * 30);
@@ -167,20 +165,12 @@ export const EnhancedVisualizer = ({ isPlaying, audioContext, analyser }: Enhanc
           const alpha = intensity * fadeOpacity;
           spectrogramCtx.fillStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
           
-          // Add glow effect for high intensity
-          if (intensity > 0.7) {
-            spectrogramCtx.shadowBlur = 10;
-            spectrogramCtx.shadowColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-          }
-          
           spectrogramCtx.fillRect(
             i * barWidth,
             spectrogramCanvas.height - (j * barHeight),
-            barWidth + 1, // Slight overlap to avoid gaps
-            barHeight + 1
+            barWidth + 1,
+            barHeight * freqStep + 1
           );
-          
-          spectrogramCtx.shadowBlur = 0;
         }
       }
     };
