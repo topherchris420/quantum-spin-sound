@@ -75,15 +75,14 @@ export const EnhancedVisualizer = ({ isPlaying, audioContext, analyser }: Enhanc
       waveformCtx.fillStyle = bgGradient;
       waveformCtx.fillRect(0, 0, waveformCanvas.width, waveformCanvas.height);
 
-      // Create vibrant gradient for waveform
       const gradient = waveformCtx.createLinearGradient(0, 0, waveformCanvas.width, 0);
       gradient.addColorStop(0, "hsl(180, 100%, 55%)");
       gradient.addColorStop(0.5, "hsl(280, 85%, 65%)");
       gradient.addColorStop(1, "hsl(320, 100%, 60%)");
 
-      waveformCtx.lineWidth = 3;
+      waveformCtx.lineWidth = 2;
       waveformCtx.strokeStyle = gradient;
-      waveformCtx.shadowBlur = 15;
+      waveformCtx.shadowBlur = 8;
       waveformCtx.shadowColor = "hsl(180, 100%, 55%)";
       waveformCtx.beginPath();
 
