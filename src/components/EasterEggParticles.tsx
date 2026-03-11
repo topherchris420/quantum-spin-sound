@@ -126,11 +126,16 @@ export const EasterEggParticles = ({ analyser }: EasterEggParticlesProps) => {
 
       const audio = audioRef.current;
 
-      // Spawn rate scales with energy
-      const spawnRate = Math.max(1, Math.floor(3 - audio.energy * 2));
+      // Spawn rate scales with energy, capped for performance
+      const spawnRate = Math.max(2, Math.floor(4 - audio.energy * 2));
       if (timeRef.current % spawnRate === 0) {
-        const count = 1 + Math.floor(audio.energy * 4);
+        const count = 1 + Math.floor(audio.energy * 2);
         for (let i = 0; i < count; i++) spawn(false);
+      }
+
+      // Cap total particles
+      if (particlesRef.current.length > 200) {
+        particlesRef.current.splice(0, particlesRef.current.length - 200);
       }
 
       const particles = particlesRef.current;
@@ -160,14 +165,10 @@ export const EasterEggParticles = ({ analyser }: EasterEggParticlesProps) => {
         ctx.globalAlpha = p.opacity * brightBoost;
 
         if (p.type === "orb") {
-          const dynamicSize = p.size * (1 + audio.bass * 0.5);
-          const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, dynamicSize);
-          grad.addColorStop(0, `hsla(${p.hue}, 80%, ${60 + audio.energy * 20}%, 0.9)`);
-          grad.addColorStop(0.5, `hsla(${p.hue}, 70%, 55%, 0.4)`);
-          grad.addColorStop(1, `hsla(${p.hue}, 60%, 50%, 0)`);
-          ctx.fillStyle = grad;
+          const dynamicSize = p.size * (1 + audio.bass * 0.4);
+          ctx.fillStyle = `hsla(${p.hue}, 80%, ${60 + audio.energy * 15}%, ${p.opacity * 0.7})`;
           ctx.beginPath();
-          ctx.arc(p.x, p.y, dynamicSize * 2, 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, dynamicSize, 0, Math.PI * 2);
           ctx.fill();
         } else if (p.type === "spark") {
           const trailLen = 4 + audio.treble * 8;

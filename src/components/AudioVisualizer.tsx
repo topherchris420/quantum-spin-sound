@@ -23,18 +23,16 @@ export const AudioVisualizer = ({ isPlaying, audioContext, analyser }: AudioVisu
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
 
+    const barCount = 48;
+    const gap = 3;
+    const barWidth = (canvas.width - (barCount - 1) * gap) / barCount;
+    const step = Math.floor(bufferLength / barCount);
+
     const draw = () => {
       animationRef.current = requestAnimationFrame(draw);
       analyser.getByteFrequencyData(dataArray);
 
-      // Clear with subtle fade
-      ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      const barCount = 64;
-      const gap = 3;
-      const barWidth = (canvas.width - (barCount - 1) * gap) / barCount;
-      const step = Math.floor(bufferLength / barCount);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       for (let i = 0; i < barCount; i++) {
         const value = dataArray[i * step];
@@ -42,17 +40,11 @@ export const AudioVisualizer = ({ isPlaying, audioContext, analyser }: AudioVisu
         const x = i * (barWidth + gap);
         const y = canvas.height - barHeight;
 
-        // Color based on frequency position
-        const hue = 168 + (i / barCount) * 162; // teal → purple → pink
+        const hue = 168 + (i / barCount) * 162;
         const lightness = 50 + (value / 255) * 15;
 
-        const gradient = ctx.createLinearGradient(x, y, x, canvas.height);
-        gradient.addColorStop(0, `hsla(${hue}, 85%, ${lightness}%, 0.9)`);
-        gradient.addColorStop(1, `hsla(${hue}, 85%, ${lightness * 0.6}%, 0.3)`);
+        ctx.fillStyle = `hsla(${hue}, 85%, ${lightness}%, 0.85)`;
 
-        ctx.fillStyle = gradient;
-
-        // Rounded top bars
         const radius = Math.min(barWidth / 2, 4);
         ctx.beginPath();
         ctx.moveTo(x + radius, y);
@@ -63,14 +55,6 @@ export const AudioVisualizer = ({ isPlaying, audioContext, analyser }: AudioVisu
         ctx.lineTo(x, y + radius);
         ctx.quadraticCurveTo(x, y, x + radius, y);
         ctx.fill();
-
-        // Top glow
-        if (value > 180) {
-          ctx.shadowBlur = 12;
-          ctx.shadowColor = `hsl(${hue}, 90%, 60%)`;
-          ctx.fillRect(x, y, barWidth, 2);
-          ctx.shadowBlur = 0;
-        }
       }
     };
 
