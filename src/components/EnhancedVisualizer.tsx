@@ -105,12 +105,6 @@ export const EnhancedVisualizer = ({ isPlaying, audioContext, analyser }: Enhanc
       }
 
       waveformCtx.stroke();
-      
-      // Add glow line underneath
-      waveformCtx.shadowBlur = 25;
-      waveformCtx.shadowColor = "hsl(280, 85%, 65%)";
-      waveformCtx.lineWidth = 1.5;
-      waveformCtx.stroke();
       waveformCtx.shadowBlur = 0;
 
       // Draw Spectrogram with enhanced colors
