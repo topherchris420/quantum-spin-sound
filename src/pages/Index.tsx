@@ -50,10 +50,12 @@ const Index = () => {
 const [easterEggCount, setEasterEggCount] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [easterEggActive, setEasterEggActive] = useState(false);
-  const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(null);
+const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(null);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const strudelRef = useRef<any>(null);
   const scratchFilterRef = useRef<BiquadFilterNode | null>(null);
   const easterEggAudioRef = useRef<HTMLAudioElement | null>(null);
+  const easterEggSourceRef = useRef<MediaElementAudioSourceNode | null>(null);
 
   useEffect(() => {
     const initAudio = () => {
@@ -76,7 +78,17 @@ const [easterEggCount, setEasterEggCount] = useState(0);
       }
     };
     initAudio();
-    return () => { strudelRef.current = null; };
+
+    // Reduced motion preference
+    const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mql.addEventListener('change', handler);
+
+    return () => {
+      strudelRef.current = null;
+      mql.removeEventListener('change', handler);
+    };
   }, []);
 
   const evaluateCode = useCallback(async () => {
@@ -262,15 +274,18 @@ const [easterEggCount, setEasterEggCount] = useState(0);
         easterEggAudioRef.current = new Audio('/easter-egg.mp3');
         easterEggAudioRef.current.volume = 0.7;
       }
-      // Route easter egg audio through an analyser for beat-sync
+      // Route easter egg audio through an analyser for beat-sync (only once per element)
       if (audioContext) {
         if (audioContext.state === 'suspended') await audioContext.resume();
-        const source = audioContext.createMediaElementSource(easterEggAudioRef.current);
-        const eeAnalyser = audioContext.createAnalyser();
-        eeAnalyser.fftSize = 256;
-        source.connect(eeAnalyser);
-        eeAnalyser.connect(audioContext.destination);
-        setEasterEggAnalyser(eeAnalyser);
+        if (!easterEggSourceRef.current) {
+          const source = audioContext.createMediaElementSource(easterEggAudioRef.current);
+          easterEggSourceRef.current = source;
+          const eeAnalyser = audioContext.createAnalyser();
+          eeAnalyser.fftSize = 256;
+          source.connect(eeAnalyser);
+          eeAnalyser.connect(audioContext.destination);
+          setEasterEggAnalyser(eeAnalyser);
+        }
       }
       easterEggAudioRef.current.play();
       setEasterEggActive(true);
@@ -288,8 +303,8 @@ const [easterEggCount, setEasterEggCount] = useState(0);
   return (
     <div className="min-h-screen relative overflow-hidden noise-overlay">
       {/* Shader background — fullscreen mode */}
-      <div className={`fixed inset-0 transition-all duration-500 ${isFullscreen ? 'z-50' : 'pointer-events-none z-0'}`}>
-        <ShaderAnimation analyser={analyser} />
+      <div className={`fixed inset-0 transition-all duration-700 ease-in-out ${isFullscreen ? 'z-50 opacity-100' : 'pointer-events-none z-0 opacity-60'}`}>
+        {!prefersReducedMotion && <ShaderAnimation analyser={analyser} />}
         {isFullscreen && (
           <div className="absolute inset-0 flex flex-col items-center justify-end pb-12 pointer-events-none">
             <motion.button
@@ -310,6 +325,8 @@ const [easterEggCount, setEasterEggCount] = useState(0);
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.2, ease: "easeInOut" }}
           className="fixed inset-0 z-40 pointer-events-none"
         >
           {/* Pulsing radial glow */}
@@ -345,10 +362,10 @@ const [easterEggCount, setEasterEggCount] = useState(0);
       )}
 
       {/* Easter egg particles */}
-      {easterEggActive && <EasterEggParticles analyser={easterEggAnalyser} />}
+      {easterEggActive && !prefersReducedMotion && <EasterEggParticles analyser={easterEggAnalyser} />}
 
       {/* Ambient orbs */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      <div className={`fixed inset-0 pointer-events-none overflow-hidden ${prefersReducedMotion ? 'hidden' : ''}`}>
         <div className="absolute -top-1/4 -left-1/4 w-[60vw] h-[60vw] rounded-full opacity-[0.04] animate-breathe"
           style={{ background: 'radial-gradient(circle, hsl(var(--quantum-glow)), transparent 70%)' }} />
         <div className="absolute -bottom-1/4 -right-1/4 w-[50vw] h-[50vw] rounded-full opacity-[0.03] animate-breathe"
