@@ -362,7 +362,7 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
       )}
 
       {/* Easter egg particles */}
-      {easterEggActive && <EasterEggParticles analyser={easterEggAnalyser} />}
+      {easterEggActive && !prefersReducedMotion && <EasterEggParticles analyser={easterEggAnalyser} />}
 
       {/* Ambient orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
