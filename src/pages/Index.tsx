@@ -50,10 +50,12 @@ const Index = () => {
 const [easterEggCount, setEasterEggCount] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [easterEggActive, setEasterEggActive] = useState(false);
-  const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(null);
+const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(null);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const strudelRef = useRef<any>(null);
   const scratchFilterRef = useRef<BiquadFilterNode | null>(null);
   const easterEggAudioRef = useRef<HTMLAudioElement | null>(null);
+  const easterEggSourceRef = useRef<MediaElementAudioSourceNode | null>(null);
 
   useEffect(() => {
     const initAudio = () => {
