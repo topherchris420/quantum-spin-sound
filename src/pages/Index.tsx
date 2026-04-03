@@ -303,8 +303,8 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
   return (
     <div className="min-h-screen relative overflow-hidden noise-overlay">
       {/* Shader background — fullscreen mode */}
-      <div className={`fixed inset-0 transition-all duration-500 ${isFullscreen ? 'z-50' : 'pointer-events-none z-0'}`}>
-        <ShaderAnimation analyser={analyser} />
+      <div className={`fixed inset-0 transition-all duration-700 ease-in-out ${isFullscreen ? 'z-50 opacity-100' : 'pointer-events-none z-0 opacity-60'}`}>
+        {!prefersReducedMotion && <ShaderAnimation analyser={analyser} />}
         {isFullscreen && (
           <div className="absolute inset-0 flex flex-col items-center justify-end pb-12 pointer-events-none">
             <motion.button
