@@ -78,7 +78,17 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
       }
     };
     initAudio();
-    return () => { strudelRef.current = null; };
+
+    // Reduced motion preference
+    const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mql.addEventListener('change', handler);
+
+    return () => {
+      strudelRef.current = null;
+      mql.removeEventListener('change', handler);
+    };
   }, []);
 
   const evaluateCode = useCallback(async () => {
