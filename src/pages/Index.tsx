@@ -274,15 +274,18 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
         easterEggAudioRef.current = new Audio('/easter-egg.mp3');
         easterEggAudioRef.current.volume = 0.7;
       }
-      // Route easter egg audio through an analyser for beat-sync
+      // Route easter egg audio through an analyser for beat-sync (only once per element)
       if (audioContext) {
         if (audioContext.state === 'suspended') await audioContext.resume();
-        const source = audioContext.createMediaElementSource(easterEggAudioRef.current);
-        const eeAnalyser = audioContext.createAnalyser();
-        eeAnalyser.fftSize = 256;
-        source.connect(eeAnalyser);
-        eeAnalyser.connect(audioContext.destination);
-        setEasterEggAnalyser(eeAnalyser);
+        if (!easterEggSourceRef.current) {
+          const source = audioContext.createMediaElementSource(easterEggAudioRef.current);
+          easterEggSourceRef.current = source;
+          const eeAnalyser = audioContext.createAnalyser();
+          eeAnalyser.fftSize = 256;
+          source.connect(eeAnalyser);
+          eeAnalyser.connect(audioContext.destination);
+          setEasterEggAnalyser(eeAnalyser);
+        }
       }
       easterEggAudioRef.current.play();
       setEasterEggActive(true);
