@@ -365,7 +365,7 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
       {easterEggActive && !prefersReducedMotion && <EasterEggParticles analyser={easterEggAnalyser} />}
 
       {/* Ambient orbs */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      <div className={`fixed inset-0 pointer-events-none overflow-hidden ${prefersReducedMotion ? 'hidden' : ''}`}>
         <div className="absolute -top-1/4 -left-1/4 w-[60vw] h-[60vw] rounded-full opacity-[0.04] animate-breathe"
           style={{ background: 'radial-gradient(circle, hsl(var(--quantum-glow)), transparent 70%)' }} />
         <div className="absolute -bottom-1/4 -right-1/4 w-[50vw] h-[50vw] rounded-full opacity-[0.03] animate-breathe"
