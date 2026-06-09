@@ -162,7 +162,17 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
       modGain.connect(carrier.frequency);
       carrier.connect(carrierGain);
       carrierGain.connect(mainGain);
-      if (analyser) {
+      // Route through the scratch filter so scratching can sweep brightness
+      const scratchFilter = scratchFilterRef.current;
+      if (scratchFilter) {
+        try { scratchFilter.disconnect(); } catch (e) {}
+        mainGain.connect(scratchFilter);
+        if (analyser) {
+          scratchFilter.connect(analyser);
+        } else {
+          scratchFilter.connect(audioContext.destination);
+        }
+      } else if (analyser) {
         mainGain.connect(analyser);
       } else {
         mainGain.connect(audioContext.destination);
@@ -214,15 +224,39 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
     }
   };
 
-  const handleScratch = useCallback((scratchSpeed: number) => {
-    if (!audioContext || !strudelRef.current?.mainGain) return;
+  const handleScratch = useCallback((velocity: number) => {
+    if (!audioContext || !strudelRef.current) return;
+    const { oscillators, mainGain } = strudelRef.current;
     const now = audioContext.currentTime;
-    const scratchIntensity = Math.abs(scratchSpeed) * 0.05;
-    const currentGain = strudelRef.current.mainGain.gain.value;
-    const targetGain = Math.max(0.05, Math.min(0.3, currentGain + scratchIntensity));
-    strudelRef.current.mainGain.gain.cancelScheduledValues(now);
-    strudelRef.current.mainGain.gain.setValueAtTime(targetGain, now);
-    strudelRef.current.mainGain.gain.linearRampToValueAtTime(0.15, now + 0.1);
+    const speed = Math.abs(velocity);
+
+    // Pitch: signed velocity bends pitch like dragging real vinyl (forward = up, back = down)
+    const detune = Math.max(-1200, Math.min(1200, velocity * 90));
+    oscillators?.forEach((osc: OscillatorNode) => {
+      try {
+        osc.detune.cancelScheduledValues(now);
+        osc.detune.setTargetAtTime(detune, now, 0.015);
+        // Spring back to normal pitch shortly after the last movement
+        osc.detune.setTargetAtTime(0, now + 0.08, 0.12);
+      } catch (e) {}
+    });
+
+    // Volume: fast flicks burst louder, slow drags duck the output
+    if (mainGain) {
+      const targetGain = Math.max(0.04, Math.min(0.32, 0.06 + speed * 0.03));
+      mainGain.gain.cancelScheduledValues(now);
+      mainGain.gain.setTargetAtTime(targetGain, now, 0.012);
+      mainGain.gain.setTargetAtTime(0.15, now + 0.1, 0.15);
+    }
+
+    // Filter sweep: brightness follows scratch speed for that wicki-wicki texture
+    const filter = scratchFilterRef.current;
+    if (filter) {
+      const freq = Math.max(300, Math.min(8000, 600 + speed * 700));
+      filter.frequency.cancelScheduledValues(now);
+      filter.frequency.setTargetAtTime(freq, now, 0.012);
+      filter.frequency.setTargetAtTime(2000, now + 0.1, 0.2);
+    }
   }, [audioContext]);
 
   const handleNeedleChange = useCallback(async (isOnRecord: boolean) => {
