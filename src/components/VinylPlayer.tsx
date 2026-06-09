@@ -195,26 +195,47 @@ export const VinylPlayer = ({ isPlaying, onNeedleChange, onScratch, audioContext
       
       {/* Tonearm and needle */}
       <div 
-        className="absolute top-0 right-4 sm:right-6 md:right-8 w-24 h-36 sm:w-32 sm:h-48 md:w-40 md:h-56 origin-top-right transition-transform cursor-grab active:cursor-grabbing touch-none select-none"
-        style={{ transform: `rotate(${needleAngle}deg)` }}
+        className={cn(
+          "absolute top-0 right-4 sm:right-6 md:right-8 w-24 h-36 sm:w-32 sm:h-48 md:w-40 md:h-56 origin-top-right transition-all duration-200 cursor-grab active:cursor-grabbing touch-none select-none",
+          isHoveringArm && !isDragging && "scale-105",
+          isDragging && "scale-110"
+        )}
+        style={{ transform: `rotate(${needleAngle}deg) scale(${isDragging ? 1.08 : isHoveringArm ? 1.04 : 1})` }}
         onPointerDown={handleArmPointerDown}
       >
-        {/* Generous invisible grab area around the arm */}
-        <div className="absolute -inset-4 sm:-inset-5" />
+        {/* Generous invisible grab area around the arm with hover/drag glow */}
+        <div 
+          className={cn(
+            "absolute -inset-4 sm:-inset-5 rounded-full transition-all duration-300",
+            isHoveringArm && !isDragging && "bg-primary/10 ring-2 ring-primary/40 shadow-[0_0_20px_rgba(0,255,255,0.25)]",
+            isDragging && "bg-primary/20 ring-4 ring-primary/70 shadow-[0_0_35px_rgba(0,255,255,0.5)]"
+          )}
+          onPointerEnter={handleArmPointerEnter}
+          onPointerLeave={handleArmPointerLeave}
+        />
         {/* Arm */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 sm:w-2 h-32 sm:h-40 md:h-48 bg-gradient-to-b from-muted to-muted-foreground rounded-full shadow-lg" />
+        <div className={cn(
+          "absolute top-0 left-1/2 -translate-x-1/2 w-1.5 sm:w-2 h-32 sm:h-40 md:h-48 bg-gradient-to-b from-muted to-muted-foreground rounded-full shadow-lg transition-all duration-200",
+          isHoveringArm && !isDragging && "shadow-[0_0_15px_rgba(0,255,255,0.3)]",
+          isDragging && "shadow-[0_0_25px_rgba(0,255,255,0.6)] brightness-110"
+        )} />
         
         {/* Cartridge */}
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-3 h-5 sm:w-4 sm:h-6 bg-primary rounded shadow-md" 
+        <div className={cn(
+          "absolute bottom-2 left-1/2 -translate-x-1/2 w-3 h-5 sm:w-4 sm:h-6 bg-primary rounded shadow-md transition-all duration-200",
+          isHoveringArm && !isDragging && "shadow-[0_0_12px_rgba(0,255,255,0.4)]",
+          isDragging && "shadow-[0_0_20px_rgba(0,255,255,0.7)] scale-110"
+        )} 
              style={{ 
-               boxShadow: needleOnRecord ? "0 0 20px hsl(var(--primary))" : "0 2px 4px rgba(0,0,0,0.3)" 
+               boxShadow: needleOnRecord ? "0 0 20px hsl(var(--primary))" : undefined 
              }} 
         />
         
         {/* Needle tip */}
         <div className={cn(
           "absolute bottom-0 left-1/2 -translate-x-1/2 w-0.5 h-2 sm:h-3 bg-accent transition-all shadow-sm",
-          needleOnRecord && "animate-pulse-glow"
+          needleOnRecord && "animate-pulse-glow",
+          isDragging && "h-3 sm:h-4 bg-white shadow-[0_0_10px_rgba(0,255,255,0.8)]"
         )} />
       </div>
 
