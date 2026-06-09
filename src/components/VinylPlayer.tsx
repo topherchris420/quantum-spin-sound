@@ -16,6 +16,7 @@ export const VinylPlayer = ({ isPlaying, onNeedleChange, onScratch, audioContext
   const [needleAngle, setNeedleAngle] = useState(-30);
   const [rotation, setRotation] = useState(0);
   const lastMousePosRef = useRef({ x: 0, y: 0 });
+  const lastMoveTimeRef = useRef(0);
   const needleOnRecord = needleAngle > -10;
 
   useEffect(() => {
@@ -90,6 +91,8 @@ export const VinylPlayer = ({ isPlaying, onNeedleChange, onScratch, audioContext
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(true);
+    lastMousePosRef.current = { x: e.clientX, y: e.clientY };
+    lastMoveTimeRef.current = performance.now();
     // Haptic feedback on drag start
     if (typeof navigator !== "undefined" && navigator.vibrate) {
       navigator.vibrate([15, 10, 15]);
@@ -119,12 +122,24 @@ export const VinylPlayer = ({ isPlaying, onNeedleChange, onScratch, audioContext
     // Fallback: click/tap near the needle (top right area)
     if (x > rect.width * 0.6 && y < rect.height * 0.55) {
       setIsDragging(true);
+      lastMousePosRef.current = { x: e.clientX, y: e.clientY };
+      lastMoveTimeRef.current = performance.now();
     } 
     // Check if click is on the vinyl record
     else if (distance < rect.width * 0.4) {
       setIsDraggingRecord(true);
       lastMousePosRef.current = { x: e.clientX, y: e.clientY };
+      lastMoveTimeRef.current = performance.now();
     }
+  };
+
+  // Signed, time-based scratch velocity (~px per frame), clamped for stability
+  const computeScratchVelocity = (delta: number) => {
+    const now = performance.now();
+    const dt = Math.max(8, now - lastMoveTimeRef.current);
+    lastMoveTimeRef.current = now;
+    const velocity = (delta / dt) * 16;
+    return Math.max(-15, Math.min(15, velocity));
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -139,18 +154,25 @@ export const VinylPlayer = ({ isPlaying, onNeedleChange, onScratch, audioContext
       
       const isOnRecord = angle > -10;
       onNeedleChange(isOnRecord);
+
+      // Scratching with the needle: wiggling the arm on the record scrubs the audio
+      if (isOnRecord && isPlaying && onScratch) {
+        const deltaY = e.clientY - lastMousePosRef.current.y;
+        const velocity = computeScratchVelocity(deltaY);
+        if (Math.abs(velocity) > 0.3) onScratch(velocity);
+      }
+      lastMousePosRef.current = { x: e.clientX, y: e.clientY };
     } else if (isDraggingRecord && isPlaying) {
-      // Calculate scratch speed based on pointer movement
+      // Velocity-based scratch from record drag (signed: forward/backward)
       const deltaX = e.clientX - lastMousePosRef.current.x;
-      const deltaY = e.clientY - lastMousePosRef.current.y;
-      const scratchSpeed = Math.sqrt(deltaX * deltaX + deltaY * deltaY) / 10;
+      const velocity = computeScratchVelocity(deltaX);
       
       // Update rotation for visual feedback
       setRotation(prev => prev + deltaX * 0.5);
       
-      // Trigger scratch effect
-      if (onScratch && audioContext) {
-        onScratch(scratchSpeed * Math.sign(deltaX));
+      // Trigger scratch effect with signed velocity
+      if (onScratch && Math.abs(velocity) > 0.3) {
+        onScratch(velocity);
       }
       
       lastMousePosRef.current = { x: e.clientX, y: e.clientY };
