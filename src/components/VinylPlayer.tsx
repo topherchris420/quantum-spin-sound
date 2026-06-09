@@ -83,7 +83,15 @@ export const VinylPlayer = ({ isPlaying, onNeedleChange, onScratch, audioContext
     ctx.fill();
   }, [isPlaying, needleAngle]);
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleArmPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -91,8 +99,8 @@ export const VinylPlayer = ({ isPlaying, onNeedleChange, onScratch, audioContext
     const centerY = rect.height / 2;
     const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
     
-    // Check if click is near needle (top right area)
-    if (x > rect.width * 0.7 && y < rect.height * 0.5) {
+    // Fallback: click/tap near the needle (top right area)
+    if (x > rect.width * 0.6 && y < rect.height * 0.55) {
       setIsDragging(true);
     } 
     // Check if click is on the vinyl record
@@ -102,7 +110,7 @@ export const VinylPlayer = ({ isPlaying, onNeedleChange, onScratch, audioContext
     }
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (isDragging) {
       const rect = e.currentTarget.getBoundingClientRect();
       const y = e.clientY - rect.top;
@@ -115,7 +123,7 @@ export const VinylPlayer = ({ isPlaying, onNeedleChange, onScratch, audioContext
       const isOnRecord = angle > -10;
       onNeedleChange(isOnRecord);
     } else if (isDraggingRecord && isPlaying) {
-      // Calculate scratch speed based on mouse movement
+      // Calculate scratch speed based on pointer movement
       const deltaX = e.clientX - lastMousePosRef.current.x;
       const deltaY = e.clientY - lastMousePosRef.current.y;
       const scratchSpeed = Math.sqrt(deltaX * deltaX + deltaY * deltaY) / 10;
@@ -132,23 +140,28 @@ export const VinylPlayer = ({ isPlaying, onNeedleChange, onScratch, audioContext
     }
   };
 
-  const handleMouseUp = () => {
+  const handlePointerUp = () => {
     setIsDragging(false);
     setIsDraggingRecord(false);
   };
 
   useEffect(() => {
     if (isDragging || isDraggingRecord) {
-      document.addEventListener("mouseup", handleMouseUp);
-      return () => document.removeEventListener("mouseup", handleMouseUp);
+      document.addEventListener("pointerup", handlePointerUp);
+      document.addEventListener("pointercancel", handlePointerUp);
+      return () => {
+        document.removeEventListener("pointerup", handlePointerUp);
+        document.removeEventListener("pointercancel", handlePointerUp);
+      };
     }
   }, [isDragging, isDraggingRecord]);
 
   return (
     <div 
-      className="relative w-full max-w-[90vw] sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto aspect-square touch-manipulation"
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
+      ref={containerRef}
+      className="relative w-full max-w-[90vw] sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto aspect-square touch-none select-none"
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
     >
       <canvas
         ref={canvasRef}
@@ -165,9 +178,12 @@ export const VinylPlayer = ({ isPlaying, onNeedleChange, onScratch, audioContext
       
       {/* Tonearm and needle */}
       <div 
-        className="absolute top-0 right-4 sm:right-6 md:right-8 w-24 h-36 sm:w-32 sm:h-48 md:w-40 md:h-56 origin-top-right transition-transform cursor-grab active:cursor-grabbing touch-manipulation"
+        className="absolute top-0 right-4 sm:right-6 md:right-8 w-24 h-36 sm:w-32 sm:h-48 md:w-40 md:h-56 origin-top-right transition-transform cursor-grab active:cursor-grabbing touch-none select-none"
         style={{ transform: `rotate(${needleAngle}deg)` }}
+        onPointerDown={handleArmPointerDown}
       >
+        {/* Generous invisible grab area around the arm */}
+        <div className="absolute -inset-4 sm:-inset-5" />
         {/* Arm */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 sm:w-2 h-32 sm:h-40 md:h-48 bg-gradient-to-b from-muted to-muted-foreground rounded-full shadow-lg" />
         
