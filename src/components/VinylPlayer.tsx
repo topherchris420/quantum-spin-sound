@@ -12,6 +12,7 @@ export const VinylPlayer = ({ isPlaying, onNeedleChange, onScratch, audioContext
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isDraggingRecord, setIsDraggingRecord] = useState(false);
+  const [isHoveringArm, setIsHoveringArm] = useState(false);
   const [needleAngle, setNeedleAngle] = useState(-30);
   const [rotation, setRotation] = useState(0);
   const lastMousePosRef = useRef({ x: 0, y: 0 });
