@@ -90,6 +90,22 @@ export const VinylPlayer = ({ isPlaying, onNeedleChange, onScratch, audioContext
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(true);
+    // Haptic feedback on drag start
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      navigator.vibrate([15, 10, 15]);
+    }
+  };
+
+  const handleArmPointerEnter = () => {
+    setIsHoveringArm(true);
+    // Light haptic nudge when hovering over grab area
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      navigator.vibrate(8);
+    }
+  };
+
+  const handleArmPointerLeave = () => {
+    setIsHoveringArm(false);
   };
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
