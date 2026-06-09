@@ -270,7 +270,7 @@ export const VinylPlayer = ({ isPlaying, onNeedleChange, onScratch, audioContext
           </div>
         </div>
       )}
-      {isPlaying && isDraggingRecord && (
+      {isPlaying && (isDraggingRecord || (isDragging && needleOnRecord)) && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-none">
           <div className="bg-primary/20 backdrop-blur-sm px-4 py-2 rounded-full border border-primary/50">
             <p className="text-xs font-mono text-primary">SCRATCHING...</p>
