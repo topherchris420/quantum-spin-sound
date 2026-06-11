@@ -376,6 +376,7 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
         if (strudelRef.current.arpInterval) clearInterval(strudelRef.current.arpInterval);
         strudelRef.current = null;
       }
+      stopCrackle();
       setIsPlaying(false);
     }
   }, [isPlaying, audioContext, evaluateCode]);
