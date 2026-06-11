@@ -278,8 +278,29 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
         if (strudelRef.current.arpInterval) clearInterval(strudelRef.current.arpInterval);
         strudelRef.current = null;
       }
+      stopCrackle();
       setIsPlaying(false);
     }
+  };
+
+  // Fade out and tear down the crackle/surface-noise bed when the needle lifts
+  const stopCrackle = () => {
+    const crackle = crackleRef.current;
+    if (!crackle || !audioContext) return;
+    const now = audioContext.currentTime;
+    try {
+      crackle.gain.gain.cancelScheduledValues(now);
+      crackle.gain.gain.setTargetAtTime(0, now, 0.25);
+      crackle.surfaceGain.gain.cancelScheduledValues(now);
+      crackle.surfaceGain.gain.setTargetAtTime(0, now, 0.3);
+      const src = crackle.source;
+      const surf = crackle.surfaceSource;
+      setTimeout(() => {
+        try { src.stop(); } catch (e) {}
+        try { surf.stop(); } catch (e) {}
+      }, 1200);
+    } catch (e) {}
+    crackleRef.current = null;
   };
 
   const handleScratch = useCallback((velocity: number) => {
