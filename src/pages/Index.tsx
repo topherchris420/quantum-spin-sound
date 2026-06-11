@@ -178,6 +178,63 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
       } else {
         mainGain.connect(audioContext.destination);
       }
+
+      // ===== Vinyl crackle + surface noise =====
+      // Continuous low-level hiss/crackle that sits under the music and swells
+      // when the user scratches, then fades back when the needle is lifted.
+      try {
+        const sampleRate = audioContext.sampleRate;
+        // 2s loop of dense crackle (sparse impulses + pink-ish noise)
+        const crackleBuffer = audioContext.createBuffer(1, sampleRate * 2, sampleRate);
+        const cData = crackleBuffer.getChannelData(0);
+        for (let i = 0; i < cData.length; i++) {
+          // sparse pops
+          const pop = Math.random() < 0.0008 ? (Math.random() * 2 - 1) * 0.9 : 0;
+          // fine grain hiss
+          const hiss = (Math.random() * 2 - 1) * 0.08;
+          cData[i] = pop + hiss;
+        }
+        const crackleSource = audioContext.createBufferSource();
+        crackleSource.buffer = crackleBuffer;
+        crackleSource.loop = true;
+        const crackleHP = audioContext.createBiquadFilter();
+        crackleHP.type = "highpass";
+        crackleHP.frequency.value = 1200;
+        const crackleGain = audioContext.createGain();
+        crackleGain.gain.setValueAtTime(0.05, now);
+        crackleSource.connect(crackleHP);
+        crackleHP.connect(crackleGain);
+        crackleGain.connect(analyser ?? audioContext.destination);
+
+        // Warmer "surface noise" bed — broadband rumble + brush
+        const surfaceBuffer = audioContext.createBuffer(1, sampleRate * 2, sampleRate);
+        const sData = surfaceBuffer.getChannelData(0);
+        let lastSample = 0;
+        for (let i = 0; i < sData.length; i++) {
+          // low-passed brown-ish noise
+          const white = Math.random() * 2 - 1;
+          lastSample = (lastSample + 0.02 * white) / 1.02;
+          sData[i] = lastSample * 3;
+        }
+        const surfaceSource = audioContext.createBufferSource();
+        surfaceSource.buffer = surfaceBuffer;
+        surfaceSource.loop = true;
+        const surfaceBP = audioContext.createBiquadFilter();
+        surfaceBP.type = "bandpass";
+        surfaceBP.frequency.value = 500;
+        surfaceBP.Q.value = 0.7;
+        const surfaceGain = audioContext.createGain();
+        surfaceGain.gain.setValueAtTime(0.04, now);
+        surfaceSource.connect(surfaceBP);
+        surfaceBP.connect(surfaceGain);
+        surfaceGain.connect(analyser ?? audioContext.destination);
+
+        crackleSource.start(now + 0.05);
+        surfaceSource.start(now + 0.05);
+        crackleRef.current = { source: crackleSource, gain: crackleGain, surfaceSource, surfaceGain };
+      } catch (e) {
+        console.warn("Crackle generator failed:", e);
+      }
       const startTime = now + 0.1;
       bass.start(startTime);
       lfo1.start(startTime);
