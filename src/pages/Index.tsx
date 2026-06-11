@@ -54,6 +54,7 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const strudelRef = useRef<any>(null);
   const scratchFilterRef = useRef<BiquadFilterNode | null>(null);
+  const crackleRef = useRef<{ source: AudioBufferSourceNode; gain: GainNode; surfaceGain: GainNode; surfaceSource: AudioBufferSourceNode } | null>(null);
   const easterEggAudioRef = useRef<HTMLAudioElement | null>(null);
   const easterEggSourceRef = useRef<MediaElementAudioSourceNode | null>(null);
 
