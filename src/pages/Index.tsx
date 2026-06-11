@@ -54,6 +54,7 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const strudelRef = useRef<any>(null);
   const scratchFilterRef = useRef<BiquadFilterNode | null>(null);
+  const crackleRef = useRef<{ source: AudioBufferSourceNode; gain: GainNode; surfaceGain: GainNode; surfaceSource: AudioBufferSourceNode } | null>(null);
   const easterEggAudioRef = useRef<HTMLAudioElement | null>(null);
   const easterEggSourceRef = useRef<MediaElementAudioSourceNode | null>(null);
 
@@ -177,6 +178,63 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
       } else {
         mainGain.connect(audioContext.destination);
       }
+
+      // ===== Vinyl crackle + surface noise =====
+      // Continuous low-level hiss/crackle that sits under the music and swells
+      // when the user scratches, then fades back when the needle is lifted.
+      try {
+        const sampleRate = audioContext.sampleRate;
+        // 2s loop of dense crackle (sparse impulses + pink-ish noise)
+        const crackleBuffer = audioContext.createBuffer(1, sampleRate * 2, sampleRate);
+        const cData = crackleBuffer.getChannelData(0);
+        for (let i = 0; i < cData.length; i++) {
+          // sparse pops
+          const pop = Math.random() < 0.0008 ? (Math.random() * 2 - 1) * 0.9 : 0;
+          // fine grain hiss
+          const hiss = (Math.random() * 2 - 1) * 0.08;
+          cData[i] = pop + hiss;
+        }
+        const crackleSource = audioContext.createBufferSource();
+        crackleSource.buffer = crackleBuffer;
+        crackleSource.loop = true;
+        const crackleHP = audioContext.createBiquadFilter();
+        crackleHP.type = "highpass";
+        crackleHP.frequency.value = 1200;
+        const crackleGain = audioContext.createGain();
+        crackleGain.gain.setValueAtTime(0.05, now);
+        crackleSource.connect(crackleHP);
+        crackleHP.connect(crackleGain);
+        crackleGain.connect(analyser ?? audioContext.destination);
+
+        // Warmer "surface noise" bed — broadband rumble + brush
+        const surfaceBuffer = audioContext.createBuffer(1, sampleRate * 2, sampleRate);
+        const sData = surfaceBuffer.getChannelData(0);
+        let lastSample = 0;
+        for (let i = 0; i < sData.length; i++) {
+          // low-passed brown-ish noise
+          const white = Math.random() * 2 - 1;
+          lastSample = (lastSample + 0.02 * white) / 1.02;
+          sData[i] = lastSample * 3;
+        }
+        const surfaceSource = audioContext.createBufferSource();
+        surfaceSource.buffer = surfaceBuffer;
+        surfaceSource.loop = true;
+        const surfaceBP = audioContext.createBiquadFilter();
+        surfaceBP.type = "bandpass";
+        surfaceBP.frequency.value = 500;
+        surfaceBP.Q.value = 0.7;
+        const surfaceGain = audioContext.createGain();
+        surfaceGain.gain.setValueAtTime(0.04, now);
+        surfaceSource.connect(surfaceBP);
+        surfaceBP.connect(surfaceGain);
+        surfaceGain.connect(analyser ?? audioContext.destination);
+
+        crackleSource.start(now + 0.05);
+        surfaceSource.start(now + 0.05);
+        crackleRef.current = { source: crackleSource, gain: crackleGain, surfaceSource, surfaceGain };
+      } catch (e) {
+        console.warn("Crackle generator failed:", e);
+      }
       const startTime = now + 0.1;
       bass.start(startTime);
       lfo1.start(startTime);
@@ -220,8 +278,29 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
         if (strudelRef.current.arpInterval) clearInterval(strudelRef.current.arpInterval);
         strudelRef.current = null;
       }
+      stopCrackle();
       setIsPlaying(false);
     }
+  };
+
+  // Fade out and tear down the crackle/surface-noise bed when the needle lifts
+  const stopCrackle = () => {
+    const crackle = crackleRef.current;
+    if (!crackle || !audioContext) return;
+    const now = audioContext.currentTime;
+    try {
+      crackle.gain.gain.cancelScheduledValues(now);
+      crackle.gain.gain.setTargetAtTime(0, now, 0.25);
+      crackle.surfaceGain.gain.cancelScheduledValues(now);
+      crackle.surfaceGain.gain.setTargetAtTime(0, now, 0.3);
+      const src = crackle.source;
+      const surf = crackle.surfaceSource;
+      setTimeout(() => {
+        try { src.stop(); } catch (e) {}
+        try { surf.stop(); } catch (e) {}
+      }, 1200);
+    } catch (e) {}
+    crackleRef.current = null;
   };
 
   const handleScratch = useCallback((velocity: number) => {
@@ -257,6 +336,19 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
       filter.frequency.setTargetAtTime(freq, now, 0.012);
       filter.frequency.setTargetAtTime(2000, now + 0.1, 0.2);
     }
+
+    // Crackle + surface noise swell during scratching, fall back to bed level
+    const crackle = crackleRef.current;
+    if (crackle) {
+      const crackleTarget = Math.min(0.45, 0.08 + speed * 0.07);
+      const surfaceTarget = Math.min(0.3, 0.06 + speed * 0.045);
+      crackle.gain.gain.cancelScheduledValues(now);
+      crackle.gain.gain.setTargetAtTime(crackleTarget, now, 0.02);
+      crackle.gain.gain.setTargetAtTime(0.05, now + 0.15, 0.25);
+      crackle.surfaceGain.gain.cancelScheduledValues(now);
+      crackle.surfaceGain.gain.setTargetAtTime(surfaceTarget, now, 0.02);
+      crackle.surfaceGain.gain.setTargetAtTime(0.04, now + 0.15, 0.3);
+    }
   }, [audioContext]);
 
   const handleNeedleChange = useCallback(async (isOnRecord: boolean) => {
@@ -284,6 +376,7 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
         if (strudelRef.current.arpInterval) clearInterval(strudelRef.current.arpInterval);
         strudelRef.current = null;
       }
+      stopCrackle();
       setIsPlaying(false);
     }
   }, [isPlaying, audioContext, evaluateCode]);
