@@ -315,6 +315,19 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
       filter.frequency.setTargetAtTime(freq, now, 0.012);
       filter.frequency.setTargetAtTime(2000, now + 0.1, 0.2);
     }
+
+    // Crackle + surface noise swell during scratching, fall back to bed level
+    const crackle = crackleRef.current;
+    if (crackle) {
+      const crackleTarget = Math.min(0.45, 0.08 + speed * 0.07);
+      const surfaceTarget = Math.min(0.3, 0.06 + speed * 0.045);
+      crackle.gain.gain.cancelScheduledValues(now);
+      crackle.gain.gain.setTargetAtTime(crackleTarget, now, 0.02);
+      crackle.gain.gain.setTargetAtTime(0.05, now + 0.15, 0.25);
+      crackle.surfaceGain.gain.cancelScheduledValues(now);
+      crackle.surfaceGain.gain.setTargetAtTime(surfaceTarget, now, 0.02);
+      crackle.surfaceGain.gain.setTargetAtTime(0.04, now + 0.15, 0.3);
+    }
   }, [audioContext]);
 
   const handleNeedleChange = useCallback(async (isOnRecord: boolean) => {
