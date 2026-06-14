@@ -12,7 +12,7 @@ export const EnhancedVisualizer = ({ isPlaying, audioContext, analyser }: Enhanc
   const waveformCanvasRef = useRef<HTMLCanvasElement>(null);
   const spectrogramCanvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
-  const meydaRef = useRef<any>(null);
+  const meydaRef = useRef<ReturnType<typeof Meyda.createMeydaAnalyzer> | null>(null);
   const { theme } = useTheme();
   
   const isDark = theme === 'dark';
@@ -53,7 +53,7 @@ export const EnhancedVisualizer = ({ isPlaying, audioContext, analyser }: Enhanc
       meydaRef.current.start();
     }
 
-    let spectrogramHistory: number[][] = [];
+    const spectrogramHistory: number[][] = [];
     const maxHistoryLength = 100;
 
     const draw = () => {

@@ -9,7 +9,7 @@ import { EasterEggParticles } from "@/components/EasterEggParticles";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 import { evaluate } from "@strudel/transpiler";
-import { Music, Disc3, Waves, Maximize2, Minimize2 } from "lucide-react";
+import { Code2, Maximize2, Minimize2, Music, Radio, Waves } from "lucide-react";
 import { motion } from "framer-motion";
 
 const DEFAULT_CODE = `stack(
@@ -41,6 +41,21 @@ const DEFAULT_CODE = `stack(
   n("c4 [e4 g4] bb4 [d4 f4]").sound("fm").delay(rand.range(0,0.5)).pan(sine.slow(2)).fast(4)
 ).bpm(120)`;
 
+type AudioCapableWindow = Window & {
+  webkitAudioContext?: typeof AudioContext;
+};
+
+type StrudelRuntime = {
+  oscillators?: OscillatorNode[];
+  gains?: GainNode[];
+  arpInterval?: ReturnType<typeof setInterval>;
+  mainGain?: GainNode;
+};
+
+const ignoreAudioNodeError = (error: unknown) => {
+  void error;
+};
+
 const Index = () => {
   const [code, setCode] = useState(DEFAULT_CODE);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -52,7 +67,7 @@ const [easterEggCount, setEasterEggCount] = useState(0);
   const [easterEggActive, setEasterEggActive] = useState(false);
 const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const strudelRef = useRef<any>(null);
+  const strudelRef = useRef<StrudelRuntime | null>(null);
   const scratchFilterRef = useRef<BiquadFilterNode | null>(null);
   const crackleRef = useRef<{ source: AudioBufferSourceNode; gain: GainNode; surfaceGain: GainNode; surfaceSource: AudioBufferSourceNode } | null>(null);
   const easterEggAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -61,8 +76,11 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
   useEffect(() => {
     const initAudio = () => {
       try {
-        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-        const ctx = new AudioContext();
+        const AudioContextConstructor = window.AudioContext || (window as AudioCapableWindow).webkitAudioContext;
+        if (!AudioContextConstructor) {
+          throw new Error("Web Audio is not supported in this browser.");
+        }
+        const ctx = new AudioContextConstructor();
         setAudioContext(ctx);
         const analyserNode = ctx.createAnalyser();
         analyserNode.fftSize = 2048;
@@ -166,7 +184,7 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
       // Route through the scratch filter so scratching can sweep brightness
       const scratchFilter = scratchFilterRef.current;
       if (scratchFilter) {
-        try { scratchFilter.disconnect(); } catch (e) {}
+        try { scratchFilter.disconnect(); } catch (error) { ignoreAudioNodeError(error); }
         mainGain.connect(scratchFilter);
         if (analyser) {
           scratchFilter.connect(analyser);
@@ -273,7 +291,7 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
     } else {
       if (strudelRef.current) {
         strudelRef.current.oscillators?.forEach((osc: OscillatorNode) => {
-          try { osc.stop(); } catch (e) {}
+          try { osc.stop(); } catch (error) { ignoreAudioNodeError(error); }
         });
         if (strudelRef.current.arpInterval) clearInterval(strudelRef.current.arpInterval);
         strudelRef.current = null;
@@ -296,10 +314,12 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
       const src = crackle.source;
       const surf = crackle.surfaceSource;
       setTimeout(() => {
-        try { src.stop(); } catch (e) {}
-        try { surf.stop(); } catch (e) {}
+        try { src.stop(); } catch (error) { ignoreAudioNodeError(error); }
+        try { surf.stop(); } catch (error) { ignoreAudioNodeError(error); }
       }, 1200);
-    } catch (e) {}
+    } catch (error) {
+      ignoreAudioNodeError(error);
+    }
     crackleRef.current = null;
   };
 
@@ -317,7 +337,9 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
         osc.detune.setTargetAtTime(detune, now, 0.015);
         // Spring back to normal pitch shortly after the last movement
         osc.detune.setTargetAtTime(0, now + 0.08, 0.12);
-      } catch (e) {}
+      } catch (error) {
+        ignoreAudioNodeError(error);
+      }
     });
 
     // Volume: fast flicks burst louder, slow drags duck the output
@@ -371,7 +393,7 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
     } else if (!isOnRecord && isPlaying) {
       if (strudelRef.current) {
         strudelRef.current.oscillators?.forEach((osc: OscillatorNode) => {
-          try { osc.stop(); } catch (e) {}
+          try { osc.stop(); } catch (error) { ignoreAudioNodeError(error); }
         });
         if (strudelRef.current.arpInterval) clearInterval(strudelRef.current.arpInterval);
         strudelRef.current = null;
@@ -391,7 +413,7 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
     if (easterEggCount + 1 === 3) {
       if (strudelRef.current) {
         strudelRef.current.oscillators?.forEach((osc: OscillatorNode) => {
-          try { osc.stop(); } catch (e) {}
+          try { osc.stop(); } catch (error) { ignoreAudioNodeError(error); }
         });
         if (strudelRef.current.arpInterval) clearInterval(strudelRef.current.arpInterval);
         strudelRef.current = null;
@@ -491,104 +513,142 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
       {/* Easter egg particles */}
       {easterEggActive && !prefersReducedMotion && <EasterEggParticles analyser={easterEggAnalyser} />}
 
-      {/* Ambient orbs */}
-      <div className={`fixed inset-0 pointer-events-none overflow-hidden ${prefersReducedMotion ? 'hidden' : ''}`}>
-        <div className="absolute -top-1/4 -left-1/4 w-[60vw] h-[60vw] rounded-full opacity-[0.04] animate-breathe"
-          style={{ background: 'radial-gradient(circle, hsl(var(--quantum-glow)), transparent 70%)' }} />
-        <div className="absolute -bottom-1/4 -right-1/4 w-[50vw] h-[50vw] rounded-full opacity-[0.03] animate-breathe"
-          style={{ background: 'radial-gradient(circle, hsl(var(--quantum-purple)), transparent 70%)', animationDelay: '2s' }} />
-      </div>
-
-      <div className="relative z-10">
-        {/* Header */}
+      <div className="relative z-10 showcase-shell">
         <motion.header
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="px-4 sm:px-6 lg:px-8 pt-6 pb-2"
+          className="showcase-nav"
         >
-          <div className="flex items-center justify-between max-w-7xl mx-auto">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <Disc3 className={`w-7 h-7 sm:w-8 sm:h-8 text-quantum-glow ${isPlaying ? 'animate-spin-vinyl' : ''}`} />
-                <div className="absolute inset-0 blur-md opacity-40">
-                  <Disc3 className="w-7 h-7 sm:w-8 sm:h-8 text-quantum-glow" />
-                </div>
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tighter text-gradient-brand">
-                  Vers3Dynamics
-                </h1>
-                <p className="text-[10px] sm:text-xs font-medium tracking-[0.3em] uppercase text-muted-foreground/60 -mt-0.5">
-                  Studio
-                </p>
-              </div>
+          <div className="brand-lockup">
+            <img src="/logo.jpg" alt="Vers3Dynamics mark" className="brand-image" />
+            <div>
+              <p className="nav-kicker">Quantum Spin Sound</p>
+              <h1>Vers3Dynamics Studio</h1>
             </div>
-            <div className="flex items-center gap-2">
+          </div>
+          <div className="nav-actions">
+            <span>Live code</span>
+            <span>Vinyl scratch</span>
+            <span>Wave field</span>
               <button
                 onClick={() => setIsFullscreen(true)}
-                className="p-2 rounded-xl glass-panel hover:shadow-[var(--glow-shadow)] transition-all"
+                className="icon-button"
                 title="Fullscreen shader"
+                aria-label="Open fullscreen shader"
               >
-                <Maximize2 className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+                <Maximize2 className="w-4 h-4" />
               </button>
               <ThemeToggle />
-            </div>
           </div>
         </motion.header>
 
-        {/* Main workspace */}
-        <main className="px-4 sm:px-6 lg:px-8 pb-8 max-w-7xl mx-auto">
+        <main className="showcase-main">
 
-          {/* Hero: Vinyl Player */}
+          {/* Hero */}
           <motion.section
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-4 mb-6 sm:mb-8"
+            className="showcase-hero"
           >
-            <div className="relative rounded-[2rem] overflow-hidden glass-panel-strong shadow-[var(--shadow-elevated)] border-gradient">
-              <div className="absolute inset-0 opacity-20 pointer-events-none"
-                style={{ background: 'var(--gradient-hero)' }} />
-              
-              <div className="relative p-6 sm:p-8 md:p-10 flex flex-col items-center">
-                <div onClick={handleEasterEgg} className="cursor-pointer">
-                  <VinylPlayer
-                    isPlaying={isPlaying}
-                    onScratch={handleScratch}
-                    onNeedleChange={handleNeedleChange}
-                  />
+            <div className="hero-copy">
+              <p className="eyebrow">A playable quantum record</p>
+              <h2>Spin the field. Hear the math bend.</h2>
+              <p className="hero-subcopy">
+                A live-coded sound lab where vinyl movement, synthesized tones, and
+                quantum-inspired visual fields react as one instrument.
+              </p>
+              <div className="hero-metrics" aria-label="Studio capabilities">
+                <div>
+                  <strong>09</strong>
+                  <span>pattern layers</span>
                 </div>
-
-                {/* Integrated controls below vinyl */}
-                <div className="w-full max-w-md mt-6">
-                  <Controls
-                    isPlaying={isPlaying}
-                    onPlayPause={handlePlayPause}
-                    onReset={handleReset}
-                  />
+                <div>
+                  <strong>120</strong>
+                  <span>bpm field</span>
                 </div>
+                <div>
+                  <strong>3D</strong>
+                  <span>shader stage</span>
+                </div>
+              </div>
+            </div>
+            <div className="hero-stage">
+              <div onClick={handleEasterEgg} className="vinyl-wrap cursor-pointer">
+                <VinylPlayer
+                  isPlaying={isPlaying}
+                  onScratch={handleScratch}
+                  onNeedleChange={handleNeedleChange}
+                />
+              </div>
+              <div className="control-dock">
+                <Controls
+                  isPlaying={isPlaying}
+                  onPlayPause={handlePlayPause}
+                  onReset={handleReset}
+                />
+                <p>Drag the needle onto the record. Drag the record while playing to scratch.</p>
               </div>
             </div>
           </motion.section>
 
-          {/* Visualizers + Code Editor */}
+          <section className="signal-runway" aria-label="Signal flow">
+            <div className="signal-track">
+              <span>spin state</span>
+              <span>surface noise</span>
+              <span>pitch bend</span>
+              <span>resonance</span>
+              <span>field vision</span>
+              <span>live code</span>
+              <span>spin state</span>
+              <span>surface noise</span>
+              <span>pitch bend</span>
+              <span>resonance</span>
+              <span>field vision</span>
+              <span>live code</span>
+            </div>
+          </section>
+
+          <section className="lab-deck" aria-label="Studio features">
+            {[
+              [
+                "01",
+                "Scratch physics",
+                "Signed drag velocity bends pitch, gain, filter brightness, crackle, and surface noise.",
+              ],
+              [
+                "02",
+                "Generative score",
+                "The Strudel-inspired canvas keeps the composition visible, editable, and central.",
+              ],
+              [
+                "03",
+                "Field vision",
+                "Audio analysis drives waveform, spectrum, and shader movement for a full-body readout.",
+              ],
+            ].map(([number, title, body]) => (
+              <article key={number} className="lab-card">
+                <span>{number}</span>
+                <h3>{title}</h3>
+                <p>{body}</p>
+              </article>
+            ))}
+          </section>
+
+          {/* Performance workspace */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5"
+            className="performance-grid"
           >
-            {/* Left: Visualizers */}
-            <div className="lg:col-span-5 space-y-4">
-              {/* Frequency bars */}
-              <div className="rounded-2xl overflow-hidden glass-panel shadow-[var(--shadow-artistic)] unified-transition hover:shadow-[var(--glow-shadow)]">
-                <div className="px-4 py-2.5 border-b border-border/30 flex items-center gap-2">
-                  <Waves className="w-3.5 h-3.5 text-quantum-glow" />
-                  <span className="text-xs font-mono font-semibold tracking-widest text-gradient-brand">
-                    FREQUENCY
-                  </span>
-                </div>
+            <div className="visual-stack">
+              <div className="section-label">
+                <Waves className="w-4 h-4" />
+                <span>Signal monitor</span>
+              </div>
+              <div className="visual-panel">
                 <AudioVisualizer
                   isPlaying={isPlaying}
                   audioContext={audioContext}
@@ -596,8 +656,7 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
                 />
               </div>
 
-              {/* Waveform + Spectrogram */}
-              <div className="rounded-2xl overflow-hidden glass-panel shadow-[var(--shadow-artistic)] unified-transition hover:shadow-[var(--glow-shadow-purple)]">
+              <div className="visual-panel visual-panel-tall">
                 <EnhancedVisualizer
                   isPlaying={isPlaying}
                   audioContext={audioContext}
@@ -606,42 +665,36 @@ const [easterEggAnalyser, setEasterEggAnalyser] = useState<AnalyserNode | null>(
               </div>
             </div>
 
-            {/* Right: Code editor */}
-            <div className="lg:col-span-7">
-              <div className="rounded-2xl overflow-hidden glass-panel-strong shadow-[var(--shadow-elevated)] unified-transition hover:shadow-[var(--glow-shadow-purple)] h-full flex flex-col">
-                <div className="px-4 py-3 border-b border-border/30 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-base sm:text-lg font-bold text-gradient-brand">
-                      Sonic Code Canvas
-                    </h2>
-                    <p className="text-[11px] sm:text-xs text-muted-foreground/60 mt-0.5 tracking-wide">
-                      Compose your quantum symphony
-                    </p>
+            <div className="code-stage">
+              <div className="code-stage-header">
+                <div>
+                  <div className="section-label">
+                    <Code2 className="w-4 h-4" />
+                    <span>Sonic code canvas</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-quantum-pink/60" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-quantum-gold/60" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-quantum-glow/60" />
-                  </div>
+                  <h3>Compose the resonance engine.</h3>
                 </div>
-                <div className="p-2 sm:p-3 flex-1 min-h-[300px] lg:min-h-0">
-                  <CodeEditor value={code} onChange={setCode} />
+                <div className="status-pills">
+                  <span>
+                    <Radio className="w-3.5 h-3.5" />
+                    {isPlaying ? "Live" : "Idle"}
+                  </span>
+                  <span>
+                    <Music className="w-3.5 h-3.5" />
+                    Web Audio
+                  </span>
                 </div>
+              </div>
+              <div className="code-editor-frame">
+                <CodeEditor value={code} onChange={setCode} />
               </div>
             </div>
           </motion.section>
 
           {/* Footer */}
-          <footer className="text-center py-8 mt-6">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel">
-              <span className="text-xs font-bold tracking-[0.2em] uppercase text-gradient-brand">
-                Gesamtkunstwerk
-              </span>
-              <span className="text-xs text-muted-foreground/50">—</span>
-              <span className="text-xs text-muted-foreground/50 tracking-wide">
-                A unified artistic experience
-              </span>
-            </div>
+          <footer className="showcase-footer">
+            <span>Gesamtkunstwerk studio</span>
+            <span>Quantum sound, vinyl touch, live code.</span>
           </footer>
         </main>
       </div>

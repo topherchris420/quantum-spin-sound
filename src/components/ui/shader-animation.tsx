@@ -7,13 +7,26 @@ interface ShaderAnimationProps {
   analyser?: AnalyserNode | null
 }
 
+type ShaderUniform<T> = THREE.IUniform<T> & {
+  type: string
+}
+
+type ShaderUniforms = {
+  time: ShaderUniform<number>
+  resolution: ShaderUniform<THREE.Vector2>
+  bass: ShaderUniform<number>
+  mid: ShaderUniform<number>
+  treble: ShaderUniform<number>
+  energy: ShaderUniform<number>
+}
+
 export function ShaderAnimation({ analyser }: ShaderAnimationProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<{
     camera: THREE.Camera
     scene: THREE.Scene
     renderer: THREE.WebGLRenderer
-    uniforms: any
+    uniforms: ShaderUniforms
     animationId: number
   } | null>(null)
   const dataArrayRef = useRef<Uint8Array | null>(null)
@@ -76,7 +89,7 @@ export function ShaderAnimation({ analyser }: ShaderAnimationProps) {
     const scene = new THREE.Scene()
     const geometry = new THREE.PlaneGeometry(2, 2)
 
-    const uniforms = {
+    const uniforms: ShaderUniforms = {
       time: { type: "f", value: 1.0 },
       resolution: { type: "v2", value: new THREE.Vector2() },
       bass: { type: "f", value: 0.0 },
