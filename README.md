@@ -34,6 +34,10 @@ No account or AI model is required. As with other Web Audio experiences, playbac
 
 **Important distinction:** the editor displays and allows changes to Strudel-like pattern text, but the current Play handler **does not evaluate that text**. It constructs its own fixed Web Audio oscillator arrangement. This is an interactive synthesizer and visual experience today, **not yet a working arbitrary-pattern Strudel live-coding environment**. The dependencies and editor are present, but connecting the language to the sound engine is still future implementation work.
 
+### A mathematical question worth testing
+
+**Does changing a displayed music pattern change the measured output spectrum as predicted?** The [proposed study](docs/MATH_RESEARCH.md) names assumptions, an existing baseline and a negative control. Candidate mathematics can be explored through [R.A.I.N.'s shared reference scout](https://github.com/topherchris420/lop-nur-twin/blob/main/docs/MATH_PORTFOLIO.md). **No additional mathematical capability has been demonstrated here yet.**
+
 ## Inside the instrument
 
 ```text
