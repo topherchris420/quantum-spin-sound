@@ -1,16 +1,10 @@
-<div align="center">
-  <img src="public/logo.jpg" alt="Vers3Dynamics Studio logo" width="260">
-</div>
-
 # Vers3Dynamics Studio
 
-**Make a sound. Touch its shape. Hear the gesture return.**
+**Drag the virtual record and hear the notes bend.**
 
-An experimental browser instrument from [Vers3Dynamics](https://vers3dynamics.com/). A digital vinyl deck, a Web Audio soundscape, realtime waveform and spectrogram displays, and a field of moving geometry share one stage. The screen responds to audio; your hands change the sound through the virtual record.
+This experimental browser instrument from [Vers3Dynamics](https://vers3dynamics.com/) pairs a digital vinyl deck with a Web Audio synthesizer. As your gesture changes the pitch and filter, follow the sound in the waveform, spectrogram, and animated field.
 
 **[Enter the studio →](https://vers3dynamics-studio.vercel.app/)** · [Get it running locally](#run-locally) · [What actually works](#what-actually-works) · [Inside the instrument](#inside-the-instrument) · [Known gaps](#known-gaps)
-
-> The point is not to make a machine sound human. It is to make the relationship between movement, sound and attention something you can explore.
 
 ## Try it in one minute
 
